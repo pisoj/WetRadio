@@ -61,6 +61,7 @@
     </div>
     <script src="assets/BenzaAMRRecorder.min.js"></script>
     <script>
+      // Audio recording
       Number.prototype.toDigets = function(n = 2) {
         return (
           (this.toString().length < n ?
@@ -105,14 +106,13 @@
       }
 
       function setRecorderPlayerTimeUpdateInterval() {
-        if(amr) {
+        if (amr) {
           recorderPlayerCurrentTimeUpdate();
         }
         recorderPlayerTimeUpdateIntervalId = setInterval(() => {
           if (amr) {
             recorderPlayerCurrentTimeUpdate();
           }
-          console.log("now-wow");
         }, 1000);
       }
 
@@ -160,8 +160,18 @@
         recorder.setAttribute("data-status", "init");
       };
       recorderDone.onclick = () => {
-        console.log(recorderTargetFileInput);
+        recorderWindow.removeAttribute("open");
+
+        const file = new File([amr.getBlob()], "recording.amr", {
+          type: "audio/amr",
+          lastModified: new Date().getTime()
+        });
+        const container = new DataTransfer();
+        container.items.add(file);
+        recorderTargetFileInput.files = container.files;
+
         recorderDestroy();
+        recorder.setAttribute("data-status", "init");
       };
       recorderRecord.onclick = () => {
         if (amr && amr.isRecording()) return;
@@ -190,7 +200,7 @@
     <div id="zuti" class="player">
       <div class="info">
         <h4><b>Žuti Radio</b></h4>
-        <p class="artist">Veselje u svakodnevnom životu!</p>
+        <p>Veselje u svakodnevnom životu!</p>
       </div>
       <div class="controls js-only">
         <div class="play-stop" data-status="stopped">
@@ -202,6 +212,42 @@
         TODO, html5 audio
       </noscript-->
     </div>
+    <script src="/assets/icecast-metadata-player/icecast-metadata-player-1.16.5.main.min.js"></script>
+    <script>
+      const audioPlayer =
+        new IcecastMetadataPlayer(
+          "http://127.0.0.1/sreca", {
+            onMetadata: (metadata) => {
+              const titleElement = targetPlayer.querySelector(".info > h4 > b");
+              const subtitleElement = targetPlayer.querySelector(".info > p");
+              const info = metadata.StreamTitle.replace(/\s*-\s*/g, '-').split("-");
+              const title = info[1] ? info[1] : info[0];
+              const artist = info[1] ? info[0] : "";
+              const album = info.slice(2).join(" - ");
+              titleElement.innerText = title;
+              subtitleElement.innerText = artist + (album ? " - " + album : "");
+            },
+            metadataTypes: ["icy"]
+          }
+        );
+
+        const players = document.querySelectorAll(".player");
+        let targetPlayer;
+        for(let player of players) {
+          const playStop = player.querySelector(".play-stop");
+          const play = playStop.querySelector("button:first-child");
+          const stop = playStop.querySelector("button:last-child");
+          play.addEventListener("click", () => {
+            targetPlayer = player;
+            playStop.setAttribute("data-status", "playing");
+            audioPlayer.play();
+          });
+          stop.addEventListener("click", () => {
+            playStop.setAttribute("data-status", "stopped");
+            audioPlayer.stop();
+          });
+        }
+    </script>
     <span class="curve"></span>
   </section>
   <section id="form">
@@ -275,6 +321,23 @@
     ?>
   </section>
   <script>
+    // Clear form after sending
+    const messageFrame = document.querySelector(".message-frame");
+    const forms = document.querySelectorAll("form");
+    for (let form of forms) {
+      form.addEventListener("submit", () => {
+        const onSent = function() {
+          messageFrame.removeEventListener("load", onSent);
+          if (messageFrame.contentDocument.title === "") {
+            return;
+          }
+          form.reset();
+        }
+        messageFrame.addEventListener("load", onSent);
+      });
+    }
+
+    // Audio recording
     let recorderTargetFileInput;
     const recorderWindow = document.querySelector("#recorder");
     const records = document.querySelectorAll(".record");

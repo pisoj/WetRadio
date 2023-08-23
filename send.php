@@ -1,6 +1,9 @@
 <?php
 function message(string $title, ?string $message, string $type)
 {
+  // If response code is Ok make title not blank so that Javascript can clear form.
+  $head_title = http_response_code() >= 200 && http_response_code() < 400 ? "Ok" : "";
+
   return "
   <!DOCTYPE html>
   <html lang=\"hr\">
@@ -10,6 +13,7 @@ function message(string $title, ?string $message, string $type)
       <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />
       <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
       <link rel=\"stylesheet\" href=\"assets/style.css\" />
+      <title>{$head_title}</title>
     </head>
     <body class=\"message-body\">
       <div class=\"message {$type}\">
