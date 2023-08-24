@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="assets/fontawesome/css/regular.min.css" />
   <link rel="stylesheet" href="assets/fontawesome/css/solid.min.css" />
   <title>Žuti Radio</title>
+  <noscript><link rel="stylesheet" href="assets/no-js.css" /></noscript>
 </head>
 
 <body>
@@ -27,10 +28,10 @@
     if (!$item->is_replayable)
       continue;
     echo "
-    <div id=\"replay-{$item->code}\" class=\"window\">
+    <div id=\"recordings-{$item->code}\" class=\"window\">
       <div class=\"content\">
         <h4>{$item->title}</h4>" .
-      ($item->is_replayable ? "<a href=\"#{$item->code}\" class=\"icon icon-button fa-solid fa-xmark\" aria-label=\"Snimke\"></a>" : "") .
+      ($item->is_replayable ? "<a href=\"#schedule-{$item->code}\" class=\"icon icon-button fa-solid fa-xmark\" aria-label=\"Snimke\"></a>" : "") .
       "</div>
       <iframe src=\"recordings.php?code={$item->code}\" loading=\"lazy\" title=\"Snimke emisije: {$item->title}\"></iframe>
     </div>
@@ -59,195 +60,51 @@
         <button class="icon-button icon fa-classic fa-circle-check" aria-label="Nastavi"></button>
       </div>
     </div>
-    <script src="assets/BenzaAMRRecorder.min.js"></script>
-    <script>
-      // Audio recording
-      Number.prototype.toDigets = function(n = 2) {
-        return (
-          (this.toString().length < n ?
-            "0".repeat(n - this.toString().length) :
-            "") + this
-        );
-      };
-      let amr;
-      let recorderPlayerTimeUpdateIntervalId;
-      const recorder = document.querySelector(".recorder");
-      const recorderRecord = recorder.querySelector(".main > .icon-main");
-      const recorderStop = recorder.querySelector(".controls > .icon-main");
-      const recorderClose = recorder.querySelector(".controls > button:first-child");
-      const recorderDone = recorder.querySelector(".controls > button:last-child");
-      const recorderPlayer = recorder.querySelector(".main > .player");
-      const recorderPlayerInfo = recorderPlayer.querySelector(".info");
-      const recorderPlayerPlayStop = recorderPlayer.querySelector(".play-stop");
-      const recorderPlayerSeek = recorderPlayer.querySelector(
-        'input[type="range"]'
-      );
-      const recorderPlayerPlay =
-        recorderPlayerPlayStop.querySelector(":first-child");
-      const recorderPlayerStop =
-        recorderPlayerPlayStop.querySelector(":last-child");
-
-      function formatTime(seconds) {
-        return Math.floor(seconds / 60) + ":" + (seconds % 60).toDigets();
-      }
-
-      function recorderPlayerCurrentTimeUpdate() {
-        recorderPlayerInfo.setAttribute(
-          "data-position-current",
-          formatTime(Math.ceil(amr.getCurrentPosition()))
-        );
-        recorderPlayerSeek.value = amr.getCurrentPosition();
-      }
-
-      function recorderPlayerReset() {
-        recorderPlayerPlayStop.setAttribute("data-status", "stopped");
-        recorderPlayerInfo.setAttribute("data-position-current", "0:00");
-        recorderPlayerSeek.value = 0;
-      }
-
-      function setRecorderPlayerTimeUpdateInterval() {
-        if (amr) {
-          recorderPlayerCurrentTimeUpdate();
-        }
-        recorderPlayerTimeUpdateIntervalId = setInterval(() => {
-          if (amr) {
-            recorderPlayerCurrentTimeUpdate();
-          }
-        }, 1000);
-      }
-
-      function recorderDestroy() {
-        amr.destroy();
-        amr = null;
-        clearInterval(recorderPlayerTimeUpdateIntervalId);
-        recorderPlayerReset();
-      }
-
-      function setupRecorderListeners() {
-        amr.onPlay(() => {
-          setRecorderPlayerTimeUpdateInterval();
-          recorderPlayerPlayStop.setAttribute("data-status", "playing");
-        });
-        amr.onResume(() => {
-          setRecorderPlayerTimeUpdateInterval();
-          recorderPlayerPlayStop.setAttribute("data-status", "playing");
-        });
-        amr.onStop(() => {
-          recorderPlayerPlayStop.setAttribute("data-status", "stopped");
-          clearInterval(recorderPlayerTimeUpdateIntervalId);
-        });
-        amr.onPause(() => {
-          recorderPlayerPlayStop.setAttribute("data-status", "stopped");
-          clearInterval(recorderPlayerTimeUpdateIntervalId);
-        });
-        amr.onStartRecord(() => {
-          recorder.setAttribute("data-status", "recording");
-        });
-        amr.onFinishRecord(() => {
-          recorderPlayerReset();
-          recorderPlayerSeek.setAttribute("max", amr.getDuration());
-          recorderPlayerInfo.setAttribute(
-            "data-position-end",
-            formatTime(Math.ceil(amr.getDuration()))
-          );
-          recorder.setAttribute("data-status", "playable");
-        });
-      }
-
-      recorderClose.onclick = () => {
-        recorderWindow.removeAttribute("open");
-        recorderDestroy();
-        recorder.setAttribute("data-status", "init");
-      };
-      recorderDone.onclick = () => {
-        recorderWindow.removeAttribute("open");
-
-        const file = new File([amr.getBlob()], "recording.amr", {
-          type: "audio/amr",
-          lastModified: new Date().getTime()
-        });
-        const container = new DataTransfer();
-        container.items.add(file);
-        recorderTargetFileInput.files = container.files;
-
-        recorderDestroy();
-        recorder.setAttribute("data-status", "init");
-      };
-      recorderRecord.onclick = () => {
-        if (amr && amr.isRecording()) return;
-        if (amr) amr.stop();
-        amr = new BenzAMRRecorder();
-        setupRecorderListeners();
-        amr
-          .initWithRecord()
-          .then(() => {
-            amr.startRecord();
-          })
-          .catch(function(e) {
-            alert(e.message || e.name || JSON.stringify(e));
-          });
-      };
-      recorderStop.onclick = () => amr.finishRecord();
-      recorderPlayerPlay.onclick = () => amr.playOrResume();
-      recorderPlayerStop.onclick = () => amr.pause();
-      recorderPlayerSeek.onchange = (event) => {
-        amr.setPosition(event.target.value);
-        recorderPlayerCurrentTimeUpdate();
-      };
-    </script>
   </div>
   <section id="live" class="transition sun">
-    <div id="zuti" class="player">
-      <div class="info">
-        <h4><b>Žuti Radio</b></h4>
-        <p>Veselje u svakodnevnom životu!</p>
-      </div>
-      <div class="controls js-only">
-        <div class="play-stop" data-status="stopped">
-          <button class="icon round fa-solid fa-circle-play" aria-label="Pokreni"></button>
-          <button class="icon round fa-classic fa-circle-stop" aria-label="Zaustavi"></button>
-        </div>
-      </div>
-      <!--noscript>
-        TODO, html5 audio
-      </noscript-->
-    </div>
-    <script src="/assets/icecast-metadata-player/icecast-metadata-player-1.16.5.main.min.js"></script>
-    <script>
-      const audioPlayer =
-        new IcecastMetadataPlayer(
-          "http://127.0.0.1/sreca", {
-            onMetadata: (metadata) => {
-              const titleElement = targetPlayer.querySelector(".info > h4 > b");
-              const subtitleElement = targetPlayer.querySelector(".info > p");
-              const info = metadata.StreamTitle.replace(/\s*-\s*/g, '-').split("-");
-              const title = info[1] ? info[1] : info[0];
-              const artist = info[1] ? info[0] : "";
-              const album = info.slice(2).join(" - ");
-              titleElement.innerText = title;
-              subtitleElement.innerText = artist + (album ? " - " + album : "");
-            },
-            metadataTypes: ["icy"]
-          }
-        );
-
-        const players = document.querySelectorAll(".player");
-        let targetPlayer;
-        for(let player of players) {
-          const playStop = player.querySelector(".play-stop");
-          const play = playStop.querySelector("button:first-child");
-          const stop = playStop.querySelector("button:last-child");
-          play.addEventListener("click", () => {
-            targetPlayer = player;
-            playStop.setAttribute("data-status", "playing");
-            audioPlayer.play();
-          });
-          stop.addEventListener("click", () => {
-            playStop.setAttribute("data-status", "stopped");
-            audioPlayer.stop();
-          });
-        }
-    </script>
+    <?php
+    $stations_stmt = $conn->prepare("SELECT * FROM stations ORDER BY priority DESC");
+    $stations_stmt->execute();
+    while ($station = $stations_stmt->fetchObject()) {
+      echo "
+          <div class=\"player\">
+            <div class=\"info\">
+              <h4><b>{$station->title}&nbsp;</b></h4>
+              <p>{$station->description}&nbsp;</p>
+            </div>
+            <div class=\"controls\">
+              <div class=\"play-stop js-only\" data-status=\"stopped\">
+                <data class=\"endpoints\" data-order=\"{$station->endpoint_order}\">{$station->endpoints}</data>
+                <button class=\"icon round fa-solid fa-circle-play\" aria-label=\"Pokreni\"></button>
+                <button class=\"icon round fa-classic fa-circle-stop\" aria-label=\"Zaustavi\"></button>
+              </div>
+              <select>";
+              $endpoints = json_decode($station->endpoints, true);
+              $endpoint_names = json_decode($station->endpoint_names, true);
+              if($station->endpoint_order == "random") {
+                $endpoints_order = range(1, count($endpoints));
+                shuffle($endpoints_order);
+                array_multisort($endpoints_order, $endpoints, $endpoint_names);
+              }
+              for ($i = 0; $i < count($endpoint_names); $i++) {
+                echo "<option value=\"{$endpoints[$i]}\">{$endpoint_names[$i]}</option>";
+              }
+        echo "</select>
+              <noscript>
+                <audio controls>
+                ";
+              foreach($endpoints as $endpoint) {
+                echo "
+                  <source src=\"{$endpoint}\" />
+                ";
+              }
+      echo      "</audio>
+              </noscript>
+            </div>
+          </div>
+        ";
+    }
+    ?>
     <span class="curve"></span>
   </section>
   <section id="form">
@@ -304,14 +161,14 @@
         if ($item->category_id != $category->id)
           continue;
         echo "
-        <div id=\"{$item->code}\" class=\"card\">
+        <div id=\"schedule-{$item->code}\" class=\"card\">
           <img src=\"assets/img/{$item->image}\" loading=\"lazy\" alt=\"\" />
           <div class=\"content\">
             <div>
               <h4>{$item->title}</h4>" .
           ($item->subtitle ? "<p class=\"text-muted\">{$item->subtitle}</p>" : "") .
           "</div>" .
-          ($item->is_replayable ? "<a href=\"#replay-{$item->code}\" class=\"icon icon-button fa-solid fa-file-audio\" aria-label=\"Snimke\"></a>" : "") .
+          ($item->is_replayable ? "<a href=\"#recordings-{$item->code}\" class=\"icon icon-button fa-solid fa-file-audio\" aria-label=\"Snimke\"></a>" : "") .
           "</div>
         </div>
         ";
@@ -320,42 +177,8 @@
     }
     ?>
   </section>
-  <script>
-    // Clear form after sending
-    const messageFrame = document.querySelector(".message-frame");
-    const forms = document.querySelectorAll("form");
-    for (let form of forms) {
-      form.addEventListener("submit", () => {
-        const onSent = function() {
-          messageFrame.removeEventListener("load", onSent);
-          if (messageFrame.contentDocument.title === "") {
-            return;
-          }
-          form.reset();
-        }
-        messageFrame.addEventListener("load", onSent);
-      });
-    }
-
-    // Audio recording
-    let recorderTargetFileInput;
-    const recorderWindow = document.querySelector("#recorder");
-    const records = document.querySelectorAll(".record");
-    records.forEach((record, index) => {
-      const fileInput = record.querySelector("input[type=\"file\"]");
-      const recordButton = record.querySelector("button:first-of-type");
-      const selectFileButton = record.querySelector("button:last-of-type");
-      const fileLabel = document.querySelectorAll(".record + p")[index];
-
-      recordButton.onclick = () => {
-        recorderTargetFileInput = fileInput;
-        recorderWindow.setAttribute("open", "");
-      }
-      selectFileButton.onclick = () => {
-        fileInput.click();
-      }
-    });
-  </script>
+  <script src="assets/icecast-metadata-player/icecast-metadata-player-1.16.5.main.min.js"></script>
+  <script src="assets/BenzaAMRRecorder.min.js"></script>
+  <script src="assets/app.js"></script>
 </body>
-
 </html>

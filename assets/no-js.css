@@ -1,3 +1,13 @@
 .js-only {
   display: none;
 }
+
+.record > button {
+  display: none;
+}
+.record > input[type="file"] {
+  position: initial;
+  width: initial;
+  opacity: initial;
+  z-index: initial;
+}

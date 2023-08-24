@@ -106,6 +106,12 @@ button {
   -webkit-appearance: none;
   appearance: none;
 }
+audio {
+  width: 100%;
+}
+data.endpoints {
+  display: none;
+}
 
 /* Utility classes */
 .round {
@@ -131,6 +137,10 @@ button {
   background-color: var(--color-dimmed);
   border-radius: var(--border-radius);
   padding: 2rem;
+  margin-top: 1.5rem;
+}
+.player:first-child {
+  margin-top: 0;
 }
 .player > .info[data-position-current] {
   display: flex;
@@ -141,22 +151,24 @@ button {
   content: attr(data-position-current) " / " attr(data-position-end);
 }
 .player > .controls {
+  display: flex;
+  justify-content: space-between;
   margin-top: 1.5rem;
 }
 .play-stop > button {
   font-size: 2.5rem;
   transition: transform 0.3s ease-out, visibility 0.3s;
 }
-.play-stop > button:first-child {
+.play-stop > button:first-of-type {
   position: absolute;
 }
-.play-stop[data-status="stopped"] > button:first-child,
-.play-stop[data-status="playing"] > button:last-child {
+.play-stop[data-status="stopped"] > button:first-of-type,
+.play-stop[data-status="playing"] > button:last-of-type {
   visibility: visible;
   transform: scale(1);
 }
-.play-stop[data-status="playing"] > button:first-child,
-.play-stop[data-status="stopped"] > button:last-child {
+.play-stop[data-status="playing"] > button:first-of-type,
+.play-stop[data-status="stopped"] > button:last-of-type {
   visibility: hidden;
   transform: scale(0);
 }
@@ -177,7 +189,6 @@ button {
 }
 .recordings-grid audio {
   box-sizing: border-box;
-  width: 100%;
   padding: 0 1rem 0 1rem;
 }
 
@@ -311,11 +322,11 @@ fieldset {
 }
 input,
 textarea,
+select,
 form button,
 button[type="submit"] {
   display: block;
   padding: 0.5em;
-  margin-top: 1rem;
   border: none;
   border-radius: calc(var(--border-radius) / 2);
   box-sizing: border-box;
@@ -323,6 +334,13 @@ button[type="submit"] {
   color: var(--color-text-inverted);
   background-color: var(--color-text);
   font-family: inherit;
+}
+form input,
+form textarea,
+form select,
+form button,
+button[type="submit"] {
+  margin-top: 1rem;
 }
 input[type="text"],
 textarea {
