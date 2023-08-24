@@ -10,15 +10,24 @@ for (let i = 0; i < players.length; i++) {
       onMetadata: (metadata) => {
         const titleElement = player.querySelector(".info > h4 > b");
         const subtitleElement = player.querySelector(".info > p");
-        const info = metadata.StreamTitle.replace(/\s*-\s*/g, "-").split("-");
-        const title = info[1] ? info[1] : info[0];
-        const artist = info[1] ? info[0] : "";
-        const album = info.slice(2).join(" - ");
+
+        let title, artist, album;
+        // Prefer ogg metadata
+        if (metadata.TITLE) {
+          title = metadata.TITLE;
+          artist = metadata.ARTIST;
+          album = metadata.ALBUM;
+        } else {
+          const info = metadata.StreamTitle.replace(/\s*-\s*/g, "-").split("-");
+          title = info[1] ? info[1] : info[0];
+          artist = info[1] ? info[0] : "";
+          album = info.slice(2).join(" - ");
+        }
         titleElement.innerHTML = title + "&nbsp;";
         subtitleElement.innerHTML =
           artist + (album ? " - " + album : "") + "&nbsp;";
       },
-      metadataTypes: ["icy"],
+      metadataTypes: ["icy", "ogg"],
       onStop: () => {
         playStop.setAttribute("data-status", "stopped");
       },
@@ -26,9 +35,11 @@ for (let i = 0; i < players.length; i++) {
   );
 
   const endpointSelect = player.querySelector(".controls > select");
-  endpointSelect.addEventListener("change", () => {
-    audioPlayer.switchEndpoint(endpointSelect.value, {});
-  });
+  if (endpointSelect) {
+    endpointSelect.addEventListener("change", () => {
+      audioPlayer.switchEndpoint(endpointSelect.value, {});
+    });
+  }
 
   const playStop = player.querySelector(".controls > .play-stop");
   const play = playStop.querySelector("button:first-of-type");

@@ -77,20 +77,21 @@
                 <data class=\"endpoints\" data-order=\"{$station->endpoint_order}\">{$station->endpoints}</data>
                 <button class=\"icon round fa-solid fa-circle-play\" aria-label=\"Pokreni\"></button>
                 <button class=\"icon round fa-classic fa-circle-stop\" aria-label=\"Zaustavi\"></button>
-              </div>
-              <select>";
+              </div>";
               $endpoints = json_decode($station->endpoints, true);
               $endpoint_names = json_decode($station->endpoint_names, true);
               if($station->endpoint_order == "random") {
                 $endpoints_order = range(1, count($endpoints));
                 shuffle($endpoints_order);
                 array_multisort($endpoints_order, $endpoints, $endpoint_names);
+              } else {
+                echo "<select>";
+                for ($i = 0; $i < count($endpoint_names); $i++) {
+                  echo "<option value=\"{$endpoints[$i]}\">{$endpoint_names[$i]}</option>";
+                }
+                echo "</select>";
               }
-              for ($i = 0; $i < count($endpoint_names); $i++) {
-                echo "<option value=\"{$endpoints[$i]}\">{$endpoint_names[$i]}</option>";
-              }
-        echo "</select>
-              <noscript>
+        echo "<noscript>
                 <audio controls>
                 ";
               foreach($endpoints as $endpoint) {
