@@ -1,4 +1,5 @@
 // Live players
+const curve = document.querySelector(".curve");
 const players = document.querySelectorAll("#live > .player");
 const audioPlayers = [];
 for (let i = 0; i < players.length; i++) {
@@ -28,8 +29,12 @@ for (let i = 0; i < players.length; i++) {
           artist + (album ? " - " + album : "") + "&nbsp;";
       },
       metadataTypes: ["icy", "ogg"],
+      onPlay: () => {
+        curve.classList.add("animate");
+      },
       onStop: () => {
         playStop.setAttribute("data-status", "stopped");
+        curve.classList.remove("animate");
       },
     })
   );

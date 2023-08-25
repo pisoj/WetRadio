@@ -1,8 +1,8 @@
 <?php
-$code = $_GET["code"] ?? null;
-if ($code == null) {
+$id = $_GET["id"] ?? null;
+if ($id == null) {
   http_response_code(400);
-  echo "<h1>No code specified</h1>";
+  echo "<h1>No id specified</h1>";
   die();
 }
 $page = (int) ($_GET["page"] ?? 1);
@@ -15,37 +15,37 @@ if ($page < 1) {
 include "main.php";
 
 $offset = $recordings_page_size * ($page - 1);
-$total_recordings_stmt = $conn->prepare("SELECT count(code) FROM recordings WHERE code = :code");
-$total_recordings_stmt->bindParam(":code", $code);
+$total_recordings_stmt = $conn->prepare("SELECT count(id) FROM show_recordings WHERE id = :id");
+$total_recordings_stmt->bindParam(":id", $id);
 $total_recordings_stmt->execute();
 $total_recordings = $total_recordings_stmt->fetchAll(PDO::FETCH_NUM)[0][0];
 $total_pages = intdiv($total_recordings, $recordings_page_size) + (($total_recordings % $recordings_page_size == 0) ? 0 : 1);
-if ($page > $total_pages) {
+if ($page > $total_pages && $total_recordings > 0) {
   http_response_code(404);
   echo "
         <h1>No recordings found</h1>
-        <p>You may have entered invalid code or page number.</p>
+        <p>You may have entered invalid id or page number.</p>
     ";
   die();
 }
 
-$recordings_stmt = $conn->prepare("SELECT * FROM recordings WHERE code = :code ORDER BY datetime DESC LIMIT :recordings_page_size OFFSET :offset");
-$recordings_stmt->bindParam(":code", $code);
+$recordings_stmt = $conn->prepare("SELECT * FROM show_recordings WHERE id = :id ORDER BY datetime DESC LIMIT :recordings_page_size OFFSET :offset");
+$recordings_stmt->bindParam(":id", $id);
 $recordings_stmt->bindParam(":recordings_page_size", $recordings_page_size);
 $recordings_stmt->bindParam(":offset", $offset);
 $recordings_stmt->execute();
 $recordings = $recordings_stmt->fetchAll(PDO::FETCH_OBJ);
 $recordings_count = count($recordings);
 
-$show_title_stmt = $conn->prepare("SELECT title FROM schedule_items WHERE code = :code");
-$show_title_stmt->bindParam(":code", $code);
+$show_title_stmt = $conn->prepare("SELECT title FROM show_items WHERE id = :id");
+$show_title_stmt->bindParam(":id", $id);
 $show_title_stmt->execute();
 $show_title = $show_title_stmt->fetchAll(PDO::FETCH_NUM)[0][0];
 
 function page_url(int $page)
 {
-  global $code;
-  return "?code={$code}&page={$page}";
+  global $id;
+  return "?id={$id}&page={$page}";
 }
 ?>
 
@@ -66,6 +66,12 @@ function page_url(int $page)
 </head>
 
 <body>
+  <?php
+  if ($total_recordings == 0) {
+    echo "<div class=\"message-screen\"><svg xmlns=\"http://www.w3.org/2000/svg\" height=\"1em\" viewBox=\"0 0 512 512\"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d=\"M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z\"/></svg><h1>Još nema snimki</h1></div>";
+    die();
+  }
+  ?>
   <div class="recordings-grid">
     <?php
     for ($i = 0; $i < $recordings_count; $i++) {
@@ -89,7 +95,7 @@ function page_url(int $page)
         ($recording->description ? "<p class=\"text-justify\">{$recording->description}</p>" : "") .
         ($recording->title ? "<p class=\"side-info\">{$display_datetime}" : "") .
         "</div>
-            <audio src=\"assets/recordings/{$code}/{$recording->file}\" preload=\"none\" controls></audio>
+            <audio src=\"assets/recordings/{$id}/{$recording->file}\" preload=\"none\" controls></audio>
           </div>
           ";
     }

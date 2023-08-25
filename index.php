@@ -21,19 +21,19 @@
 <body>
   <iframe title="Status slanja" name="message" class="message-frame" src="data:text/html;charset=utf-8,%3Chtml%3E%3Chead%3E%3Cstyle%3E%3Aroot%7Bcolor%2Dscheme%3A%20dark%3B%7D%3C%2Fstyle%3E%3C%2Fhead%3E%3Cbody%3E%3C%2Fbody%3E%3C%2Fhtml%3E"></iframe>
   <?php
-  $items_stmt = $conn->prepare("SELECT code, title, subtitle, image, is_replayable, category_id FROM schedule_items ORDER BY priority DESC");
+  $items_stmt = $conn->prepare("SELECT id, title, subtitle, image, is_replayable, category_id FROM show_items ORDER BY priority DESC");
   $items_stmt->execute();
-  $schedule_items = $items_stmt->fetchAll(PDO::FETCH_OBJ);
-  foreach ($schedule_items as $item) {
+  $show_items = $items_stmt->fetchAll(PDO::FETCH_OBJ);
+  foreach ($show_items as $item) {
     if (!$item->is_replayable)
       continue;
     echo "
-    <div id=\"recordings-{$item->code}\" class=\"window\">
+    <div id=\"recordings-{$item->id}\" class=\"window\">
       <div class=\"content\">
         <h4>{$item->title}</h4>" .
-      ($item->is_replayable ? "<a href=\"#schedule-{$item->code}\" class=\"icon icon-button fa-solid fa-xmark\" aria-label=\"Snimke\"></a>" : "") .
+      ($item->is_replayable ? "<a href=\"#show-{$item->id}\" class=\"icon icon-button fa-solid fa-xmark\" aria-label=\"Snimke\"></a>" : "") .
       "</div>
-      <iframe src=\"recordings.php?code={$item->code}\" loading=\"lazy\" title=\"Snimke emisije: {$item->title}\"></iframe>
+      <iframe src=\"recordings.php?id={$item->id}\" loading=\"lazy\" title=\"Snimke emisije: {$item->title}\"></iframe>
     </div>
     ";
   }
@@ -111,31 +111,31 @@
   <section id="form">
     <h2>Sudjeluj u emisijama</h2>
     <?php
-    $send_types_stmt = $conn->prepare("SELECT * FROM send_types ORDER BY priority DESC");
+    $send_types_stmt = $conn->prepare("SELECT id, title, fields, submit_text FROM send_types ORDER BY priority DESC");
     $send_types_stmt->execute();
     while ($send_type = $send_types_stmt->fetchObject()) {
       $fields = json_decode($send_type->fields, false);
       echo "
       <form action=\"send.php\" method=\"post\" target=\"message\" enctype=\"multipart/form-data\">
-        <input type=\"hidden\" name=\"code\" value=\"{$send_type->code}\">
+        <input type=\"hidden\" name=\"id\" value=\"{$send_type->id}\">
         <fieldset>
           <legend>{$send_type->title}</legend>";
       foreach ($fields as $field) {
-        $required = $field->is_required ?? false ? "required" : "";
+        $required = $field->required ?? false ? "required" : "";
         if ($field->type == "textarea") {
-          echo "<textarea name=\"{$field->code}\" placeholder=\"{$field->title}\" {$required}></textarea>";
+          echo "<textarea name=\"{$field->id}\" placeholder=\"{$field->title}\" {$required}></textarea>";
         } else if ($field->type == "record") {
           $allowed_mime_types = implode(",", array_keys($audio_mime_types));
           echo "
           <div class=\"record\">
-            <input type=\"file\" name=\"{$field->code}\" accept=\"{$allowed_mime_types}\" {$required} />
+            <input type=\"file\" name=\"{$field->id}\" accept=\"{$allowed_mime_types}\" {$required} />
             <button type=\"button\">Snimi <i class=\"fa-solid fa-microphone\"></i></button>
             <button type=\"button\" class=\"icon icon-button fa-regular fa-folder-open\"></button>
           </div>
           <p></p>
           ";
         } else {
-          echo "<input type=\"{$field->type}\" name=\"{$field->code}\" placeholder=\"{$field->title}\" {$required}>";
+          echo "<input type=\"{$field->type}\" name=\"{$field->id}\" placeholder=\"{$field->title}\" {$required}>";
         }
       }
       echo "
@@ -146,30 +146,30 @@
     }
     ?>
   </section>
-  <section id="schedule" class="box">
+  <section id="show" class="box">
     <p>Ovaj tjedan: <b>
         <?php echo (date("W", strtotime(date_default_timezone_get())) % 2 == 0) ? "Parni" : "Neparni" ?>
       </b></p>
     <?php
-    $category_stmt = $conn->prepare("SELECT id, title FROM schedule_categories ORDER BY priority DESC");
+    $category_stmt = $conn->prepare("SELECT id, title FROM show_categories ORDER BY priority DESC");
     $category_stmt->execute();
     while ($category = $category_stmt->fetchObject()) {
       echo "
       <h3>{$category->title}</h3>
       <div class=\"card-grid\">
       ";
-      foreach ($schedule_items as $item) {
+      foreach ($show_items as $item) {
         if ($item->category_id != $category->id)
           continue;
         echo "
-        <div id=\"schedule-{$item->code}\" class=\"card\">
+        <div id=\"show-{$item->id}\" class=\"card\">
           <img src=\"assets/img/{$item->image}\" loading=\"lazy\" alt=\"\" />
           <div class=\"content\">
             <div>
               <h4>{$item->title}</h4>" .
           ($item->subtitle ? "<p class=\"text-muted\">{$item->subtitle}</p>" : "") .
           "</div>" .
-          ($item->is_replayable ? "<a href=\"#recordings-{$item->code}\" class=\"icon icon-button fa-solid fa-file-audio\" aria-label=\"Snimke\"></a>" : "") .
+          ($item->is_replayable ? "<a href=\"#recordings-{$item->id}\" class=\"icon icon-button fa-solid fa-file-audio\" aria-label=\"Snimke\"></a>" : "") .
           "</div>
         </div>
         ";

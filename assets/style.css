@@ -26,9 +26,13 @@
   font-family: Verdana;
   color: var(--color-text);
 }
+html {
+  height: 100%;
+}
 body {
   margin: 0;
   background-color: var(--color-background);
+  height: 100%;
 }
 
 /* Transitions */
@@ -75,6 +79,17 @@ body {
   right: 0;
   transform: translate(0, 60%);
   background-color: var(--color-transition-to);
+}
+.curve.animate {
+  animation: 1s ease-in-out infinite alternate curve-waves;
+}
+@keyframes curve-waves {
+  0% {
+    height: var(--transition-height);
+  }
+  100% {
+    height: 0;
+  }
 }
 
 /* Default elements */
@@ -517,6 +532,18 @@ button[type="submit"]:hover::after {
   width: 0;
   opacity: 0;
   z-index: -1;
+}
+
+.message-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.message-screen > svg {
+  height: 6rem;
+  fill: var(--color-text);
 }
 
 /* Sections */

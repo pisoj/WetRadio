@@ -31,10 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] != "POST") {
   die();
 }
 
-$code = $_POST["code"] ?? null;
-if ($code == null) {
+$id = $_POST["id"] ?? null;
+if ($id == null) {
   http_response_code(400);
-  echo message("No code specified", null, "error");
+  echo message("No id specified", null, "error");
   die();
 }
 
@@ -50,13 +50,13 @@ if ($last_sent_seconds_passed < $send_interval_seconds) {
   die();
 }
 
-$send_type_stmt = $conn->prepare("SELECT fields, success_message FROM send_types WHERE code = :code");
-$send_type_stmt->bindParam(":code", $code);
+$send_type_stmt = $conn->prepare("SELECT fields, success_message FROM send_types WHERE id = :id");
+$send_type_stmt->bindParam(":id", $id);
 $send_type_stmt->execute();
 $send_type = $send_type_stmt->fetchAll(PDO::FETCH_OBJ);
 if (count($send_type) < 1) {
   http_response_code(400);
-  echo message("Invalid code", null, "error");
+  echo message("Invalid id", null, "error");
   die();
 }
 $send_type_fields = json_decode($send_type[0]->fields, false);
@@ -65,24 +65,24 @@ $send_type_success_message = $send_type[0]->success_message;
 $send_data = array();
 foreach ($send_type_fields as $send_type_field) {
   $send_field_data = new StdClass;
-  $send_field_data->code = $send_type_field->code;
+  $send_field_data->id = $send_type_field->id;
 
   if ($send_type_field->type === "record") {
 
-    if (!in_array($_FILES[$send_type_field->code]["type"], array_keys($audio_mime_types))) {
+    if (!in_array($_FILES[$send_type_field->id]["type"], array_keys($audio_mime_types))) {
       http_response_code(400);
       echo message("Bad File", "File is not an allowed audio file.", "error");
       die();
     }
 
-    if ($_FILES[$send_type_field->code]["size"] > cfg_to_num($send_file_max_size)) {
+    if ($_FILES[$send_type_field->id]["size"] > cfg_to_num($send_file_max_size)) {
       http_response_code(413);
       echo message("File Too Large", "File is exceeding the size limit.", "error");
       die();
     }
 
-    $file_hash_name = hash_file("md5", $_FILES[$send_type_field->code]["tmp_name"]) . $audio_mime_types[$_FILES[$send_type_field->code]["type"]];
-    $move_status = move_uploaded_file($_FILES[$send_type_field->code]["tmp_name"], "assets/sends/" . $file_hash_name);
+    $file_hash_name = hash_file("md5", $_FILES[$send_type_field->id]["tmp_name"]) . $audio_mime_types[$_FILES[$send_type_field->id]["type"]];
+    $move_status = move_uploaded_file($_FILES[$send_type_field->id]["tmp_name"], "assets/sends/" . $file_hash_name);
     if (!$move_status) {
       http_response_code(500);
       echo message("Upload error", "An error ocured during the upload of: {$send_type_field->title}.", "error");
@@ -94,10 +94,10 @@ foreach ($send_type_fields as $send_type_field) {
     continue;
   }
 
-  $send_field_value = $_POST[$send_type_field->code] ?? null;
+  $send_field_value = $_POST[$send_type_field->id] ?? null;
   if (($send_type_field->is_required ?? false) && $send_field_value == null) {
     http_response_code(400);
-    echo message("Value missing", "No specified value for field: {$send_type_field->title}.", "error");
+    echo message("Value missing", "No vale specified for field: {$send_type_field->title}.", "error");
     die();
   }
 
@@ -106,8 +106,8 @@ foreach ($send_type_fields as $send_type_field) {
 }
 
 $send_data_json = json_encode($send_data);
-$send_type_fields_stmt = $conn->prepare("INSERT INTO send_items VALUES (:code, :data, datetime('now', 'localtime'))");
-$send_type_fields_stmt->bindParam(":code", $code);
+$send_type_fields_stmt = $conn->prepare("INSERT INTO send_items VALUES (:id, :data, datetime('now', 'localtime'))");
+$send_type_fields_stmt->bindParam(":id", $id);
 $send_type_fields_stmt->bindParam(":data", $send_data_json);
 $send_type_fields_stmt->execute();
 
