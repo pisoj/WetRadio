@@ -49,7 +49,7 @@ class Connection
       return $this->conn;
 
     try {
-      $this->conn = new \PDO("sqlite:" . $this->db_name);
+      $this->conn = new \PDO("sqlite:" . __DIR__ . "/" . $this->db_name);
     } catch (\PDOException $e) {
       $this->conn = null;
     }

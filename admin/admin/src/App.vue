@@ -1,35 +1,36 @@
 <template>
   <v-layout>
-      <v-navigation-drawer
-        permanent
-        rail
-        expand-on-hover
-      >
-        <v-list>
-          <v-list-item
-            prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-            title="Sandra Adams"
-            subtitle="sandra_a88@gmailcom"
-          ></v-list-item>
-        </v-list>
+    <v-app-bar
+      density="compact"
+      color="black"
+      scroll-behavior="fade-image"
+      image="/banner.jpg"
+      title="WetRadio"
+    >
+      <template v-slot:append>
+        <v-btn icon="mdi-cog"></v-btn>
+        <v-menu transition="scale-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn icon="mdi-dots-vertical" v-bind="props"></v-btn>
+          </template>
 
-        <v-divider></v-divider>
-
-        <v-list density="compact" nav>
-          <v-list-item prepend-icon="mdi-folder" title="My Files" value="myfiles"></v-list-item>
-          <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared"></v-list-item>
-          <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
-        </v-list>
-      </v-navigation-drawer>
-
-      <v-main>
-        <router-view/>
-      </v-main>
-    </v-layout>
+          <v-list>
+            <v-list-item prepend-icon="mdi-account-circle" value>
+              <v-list-item-title>My account</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-invert-colors" value>
+              <v-list-item-title>Change theme</v-list-item-title>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-logout" value>
+              <v-list-item-title>Logout</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+    </v-app-bar>
+    <v-main>
+      <router-view />
+      <div style="height: 100vh"></div>
+    </v-main>
+  </v-layout>
 </template>
-
-<style>
-main {
-  margin: 1rem;
-}
-</style>
