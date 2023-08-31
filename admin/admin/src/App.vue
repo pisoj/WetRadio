@@ -34,3 +34,10 @@
     </v-main>
   </v-layout>
 </template>
+
+<style>
+.only-card {
+  width: 100%;
+  max-width: 75rem;
+}
+</style>

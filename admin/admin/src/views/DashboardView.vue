@@ -1,12 +1,26 @@
 <template>
   <v-container>
+    <v-alert
+      v-if="successAlert"
+      type="success"
+      class="mb-4"
+      variant="elevated"
+      :title="successAlert.title"
+      :text="successAlert.message"
+    ></v-alert>
     <v-row>
       <v-col cols="12" md="6">
         <v-card prepend-icon="mdi-radio">
           <template v-slot:title>
             <div class="d-flex align-center justify-space-between">
               Stations
-              <v-btn icon="mdi-plus" variant="text"></v-btn>
+              <v-btn
+                icon="mdi-plus"
+                variant="text"
+                @click="
+                  $router.push({ name: 'station', params: { id: 'new' } })
+                "
+              ></v-btn>
             </div>
           </template>
           <v-list lines="two">
@@ -14,7 +28,9 @@
               v-for="station in stations"
               :key="station"
               :value="station.id"
-              @click="$router.push({name: 'station', params: { id: station.id }})"
+              @click="
+                $router.push({ name: 'station', params: { id: station.id } })
+              "
             >
               <div class="d-flex align-center justify-space-between">
                 <div>
@@ -59,10 +75,7 @@
             </div>
           </template>
           <v-list lines="two">
-            <div
-              v-for="category in shows"
-              :key="category"
-            >
+            <div v-for="category in shows" :key="category">
               <b class="pl-4">{{ category.category_title }}</b>
               <v-list-item
                 class="pl-8"
@@ -102,15 +115,22 @@ export default defineComponent({
     stations: any;
     shows: any;
     sendTypes: any;
+    successAlert:
+      | {
+          title: string;
+          message: string;
+        }
+      | undefined;
   } {
     return {
       stations: null,
       shows: null,
       sendTypes: null,
+      successAlert: history.state.successAlert,
     };
   },
 
-  mounted() {
+  created() {
     this.axios
       .get("http://10.1.10.20/admin/api/stations.php")
       .then((response) => (this.stations = response.data));
