@@ -82,6 +82,7 @@
                 v-for="show in category.shows"
                 :key="show"
                 :value="show.id"
+                @click="$router.push({ name: 'show', params: { id: show.id } })"
               >
                 <div class="d-flex align-center justify-space-between">
                   <div>

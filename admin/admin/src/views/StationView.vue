@@ -12,6 +12,7 @@
       <v-card
         v-if="error?.user || !error"
         class="only-card"
+        prepend-icon="mdi-radio"
         title="Station settings"
       >
         <v-card-text>
