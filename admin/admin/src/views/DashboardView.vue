@@ -71,7 +71,11 @@
           <template v-slot:title>
             <div class="d-flex align-center justify-space-between">
               Shows
-              <v-btn icon="mdi-plus" variant="text"></v-btn>
+              <v-btn
+                icon="mdi-plus"
+                variant="text"
+                @click="$router.push({ name: 'show', params: { id: 'new' } })"
+              ></v-btn>
             </div>
           </template>
           <v-list lines="two">

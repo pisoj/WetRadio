@@ -47,10 +47,13 @@ if ($_SERVER["REQUEST_METHOD"] === "PUT") {
   }
   $station = json_decode($body, false);
   validate_id(strval($station->id));
+  echo 0.2;
   validate_station_settings($station->title, $station->endpoints, $station->endpoint_names, $station->endpoint_order, $station->priority);
 
+  echo 1;
   $update_stmt = $conn->prepare("UPDATE stations SET title = :title, description = :description, endpoints = :endpoints, endpoint_names = :endpoint_names, endpoint_order = :endpoint_order, priority = :priority WHERE id = :id");
   $update_stmt->bindParam(":id", $station->id);
+  echo 2;
   bind_station_settings($update_stmt, $station);
   $update_stmt->execute();
 

@@ -13,7 +13,7 @@
         v-if="error?.user || !error"
         class="only-card"
         prepend-icon="mdi-radio"
-        title="Station settings"
+        :title="title"
       >
         <v-card-text>
           <v-text-field
@@ -183,6 +183,7 @@ export default defineComponent({
     urlRule: any;
     isNew: boolean;
     deleteDialogState: boolean;
+    title: String;
   } {
     return {
       error: null,
@@ -220,6 +221,7 @@ export default defineComponent({
       ],
       isNew: false,
       deleteDialogState: false,
+      title: "Station settings",
     };
   },
 
@@ -308,6 +310,7 @@ export default defineComponent({
     if (Number.isNaN(this.station.id)) {
       this.isNew = true;
       this.station.id = undefined;
+      this.title = "New station";
       return;
     }
     this.axios

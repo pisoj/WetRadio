@@ -13,7 +13,7 @@
         v-if="error?.user || !error"
         class="only-card"
         prepend-icon="mdi-radio-tower"
-        title="Show settings"
+        :title="title"
       >
         <v-card-text>
           <v-text-field
@@ -211,7 +211,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { AxiosError } from "axios";
-import { readonly } from "vue";
 
 export default defineComponent({
   name: "ShowView",
@@ -247,6 +246,7 @@ export default defineComponent({
     integerRule: any;
     isNew: boolean;
     deleteDialogState: boolean;
+    title: String;
   } {
     return {
       error: null,
@@ -277,6 +277,7 @@ export default defineComponent({
       ],
       isNew: false,
       deleteDialogState: false,
+      title: "Show settings",
     };
   },
 
@@ -375,6 +376,7 @@ export default defineComponent({
     if (Number.isNaN(this.show.id)) {
       this.isNew = true;
       this.show.id = undefined;
+      this.title = "New show";
       return;
     }
     this.axios
