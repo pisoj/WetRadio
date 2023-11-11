@@ -156,6 +156,7 @@ if($id !== null) {
         <input type="checkbox" name="field<?= $i ?>_required" id="field<?= $i ?>_required">
         <label for="field<?= $i ?>_required" title="Is the field required for the user to submit the send.">Required</label>
       </fieldset>
+      <br>
       <?php endfor ?>
       <input type="submit" value="<?= $number_of_fields === 0 ? "Next" : "Save" ?>">
     </form>

@@ -12,6 +12,7 @@ include "../main.php";
 
 <?php
 if($_SERVER['REQUEST_METHOD'] === "POST") {
+  $id = $_POST["id"] ?? null;
   $title = $_POST["title"];
   $description = $_POST["description"];
   $raw_endpoints = $_POST["endpoints"];
@@ -53,6 +54,20 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     die();
   }
 
+  // Update an existng station
+  if($id !== null) {
+    $update_stmt = $conn->prepare("UPDATE stations SET title = :title, description = :description, endpoints = :endpoints, endpoint_names = :endpoint_names, endpoint_order = :endpoint_order, priority = :priority WHERE id = :id");
+    $update_stmt->bindParam(":id", htmlspecialchars($id));
+    $update_stmt->bindParam(":title", htmlspecialchars($title));
+    $update_stmt->bindParam(":description", htmlspecialchars($description));
+    $update_stmt->bindParam(":endpoints", json_encode($endpoints));
+    $update_stmt->bindParam(":endpoint_names", json_encode($endpoint_names));
+    $update_stmt->bindParam(":endpoint_order", $endpoint_order);
+    $update_stmt->bindParam(":priority", $priority);
+    $update_stmt->execute();
+    die();
+  }
+
   $insert_stmt = $conn->prepare("INSERT INTO stations (title, description, endpoints, endpoint_names, endpoint_order, priority) VALUES (:title, :description, :endpoints, :endpoint_names, :endpoint_order, :priority)");
   $insert_stmt->bindParam(":title", htmlspecialchars($title));
   $insert_stmt->bindParam(":description", htmlspecialchars($description));
@@ -65,43 +80,68 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   http_response_code(201);
   die();
 }
+
+$id = $_GET["id"] ?? null;
+$title = "";
+$description = "";
+$endpoints = "";
+$endpoint_names = "";
+$endpoint_order = "";
+$priority = "";
+
+if($id !== null) {
+  $station_stmt = $conn->prepare("SELECT title, description, endpoints, endpoint_names, endpoint_order, priority FROM stations WHERE id = :id");
+  $station_stmt->bindParam(":id", $id);
+  $station_stmt->execute();
+  $station = $station_stmt->fetchObject();
+
+  $title = $station->title;
+  $description = $station->description;
+  $endpoints = implode(",", json_decode($station->endpoints));
+  $endpoint_names = implode(",", json_decode($station->endpoint_names));
+  $endpoint_order = $station->endpoint_order;
+  $priority = $station->priority;
+}
 ?>
 
 <body>
   <fieldset>
-    <legend>New station</legend>
+    <legend><?= $id === null ? "New station" : "Edit station" ?></legend>
     <form action="" method="post">
       <table>
         <tr>
           <td>Title:</td>
-          <td><input type="text" name="title" required></td>
+          <td><input type="text" name="title" value="<?= $title ?>" required></td>
         </tr>
         <tr>
           <td>Description:</td>
-          <td><input type="text" name="description" required></td>
+          <td><input type="text" name="description" value="<?= $description ?>" required></td>
         </tr>
         <tr>
           <td>Endpoint URLs:</td>
-          <td><input type="text" name="endpoints" title="A comma-sepparated list of endpoint URLs" placeholder="http://my.radio/stream1,http://my.radio/stream2" required></td>
+          <td><input type="text" name="endpoints" value="<?= $endpoints ?>" title="A comma-sepparated list of endpoint URLs" placeholder="http://my.radio/stream1,http://my.radio/stream2" required></td>
         </tr>
         <tr>
           <td>Endpoint names:</td>
-          <td><input type="text" name="endpoint_names" title="A comma-sepparated list of endpoint names witch will be displayed to the user when choosing an endpoint. You should specify a name for every endpoint URL." placeholder="Mobile MP3,Hight quality FLAC" required></td>
+          <td><input type="text" name="endpoint_names" value="<?= $endpoint_names ?>" title="A comma-sepparated list of endpoint names witch will be displayed to the user when choosing an endpoint. You should specify a name for every endpoint URL." placeholder="Mobile MP3,Hight quality FLAC" required></td>
         </tr>
         <tr>
           <td>Endpoint order:</td>
           <td>
-            <input type="radio" name="endpoint_order" value="ordered" id="ordered" required>
+            <input type="radio" name="endpoint_order" value="ordered" id="ordered" required <?= $endpoint_order === "ordered" ? "checked" : "" ?>>
             <label for="ordered" title="The user will be able to choose the endpont they want. Select this if you have multiple endpoints of a different quality.">Ordered</label>
-            <input type="radio" name="endpoint_order" value="random" id="random" required>
+            <input type="radio" name="endpoint_order" value="random" id="random" required <?= $endpoint_order === "random" ? "checked" : "" ?>>
             <label for="random" title="The endpoint selection won't be avaible to the user, instead, endpoints are goint to be choosen randomly. Select this for load balancing multiple endpoints of the same quality.">Random</label>
           </td>
         </tr>
         <tr>
           <td>Priority:</td>
-          <td><input type="number" name="priority" title="Where the station will be positioned relative to other stations. i.e. Higher or lower" required></td>
+          <td><input type="number" name="priority" value="<?= $priority ?>" title="Where the station will be positioned relative to other stations. i.e. Higher or lower" required></td>
         </tr>
       </table>
+      <?php if($id !== null): ?>
+      <input type="hidden" name="id" value="<?= $id ?>">
+      <?php endif ?>
       <input type="submit" value="Save">
     </form>
   </fieldset>

@@ -10,6 +10,11 @@ include "../main.php";
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
 </head>
 
+<?php
+$show_category_stmt = $conn->prepare("SELECT title, priority FROM show_categories");
+$show_category_stmt->execute();
+?>
+
 <body>
   <fieldset>
     <legend>Stations</legend>
