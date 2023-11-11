@@ -81,7 +81,7 @@ foreach ($send_type_fields as $send_type_field) {
       die();
     }
 
-    $file_hash_name = hash_file("md5", $_FILES[$send_type_field->id]["tmp_name"]) . $audio_mime_types[$_FILES[$send_type_field->id]["type"]];
+    $file_hash_name = hash_file("sha512", $_FILES[$send_type_field->id]["tmp_name"]) . $audio_mime_types[$_FILES[$send_type_field->id]["type"]];
     $move_status = move_uploaded_file($_FILES[$send_type_field->id]["tmp_name"], "assets/sends/" . $file_hash_name);
     if (!$move_status) {
       http_response_code(500);

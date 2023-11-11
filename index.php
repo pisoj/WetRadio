@@ -163,7 +163,7 @@
           continue;
         echo "
         <div id=\"show-{$item->id}\" class=\"card\">
-          <img src=\"assets/s-{$item->image}\" loading=\"lazy\" alt=\"\" />
+          <img src=\"assets/{$item->image}\" loading=\"lazy\" alt=\"\" />
           <div class=\"content\">
             <div>
               <h4>{$item->title}</h4>" .

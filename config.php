@@ -26,6 +26,12 @@ $audio_mime_types = array(
   "audio/x-wav" => ".wav"
 );
 
+$image_mime_types = array(
+  "image/png" => ".png",
+  "image/webp" => ".webp",
+  "image/jpeg" => ".jpg",
+);
+
 $db_name = "db";
 ?>
 <?php ?>
