@@ -1,16 +1,6 @@
 <?php
 include "../main.php";
-?>
-<!DOCTYPE html>
-<html>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
-</head>
-
-<?php
 if($_SERVER['REQUEST_METHOD'] === "POST") {
   $id = $_POST["id"] ?? null;
   $title = $_POST["title"];
@@ -19,6 +9,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $raw_endpoint_names = $_POST["endpoint_names"];
   $endpoint_order = $_POST["endpoint_order"];
   $priority = $_POST["priority"];
+  $disabled = $_POST["disabled"] ?? 0;
 
   if(empty($title)) {
     http_response_code(400);
@@ -56,7 +47,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
 
   // Update an existng station
   if($id !== null) {
-    $update_stmt = $conn->prepare("UPDATE stations SET title = :title, description = :description, endpoints = :endpoints, endpoint_names = :endpoint_names, endpoint_order = :endpoint_order, priority = :priority WHERE id = :id");
+    $update_stmt = $conn->prepare("UPDATE stations SET title = :title, description = :description, endpoints = :endpoints, endpoint_names = :endpoint_names, endpoint_order = :endpoint_order, priority = :priority, disabled = :disabled WHERE id = :id");
     $update_stmt->bindParam(":id", htmlspecialchars($id));
     $update_stmt->bindParam(":title", htmlspecialchars($title));
     $update_stmt->bindParam(":description", htmlspecialchars($description));
@@ -64,17 +55,18 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     $update_stmt->bindParam(":endpoint_names", json_encode($endpoint_names));
     $update_stmt->bindParam(":endpoint_order", $endpoint_order);
     $update_stmt->bindParam(":priority", $priority);
+    $update_stmt->bindParam(":disabled", $disabled);
     $update_stmt->execute();
     die();
   }
 
-  $insert_stmt = $conn->prepare("INSERT INTO stations (title, description, endpoints, endpoint_names, endpoint_order, priority) VALUES (:title, :description, :endpoints, :endpoint_names, :endpoint_order, :priority)");
+  $insert_stmt = $conn->prepare("INSERT INTO stations (title, description, endpoints, endpoint_names, endpoint_order, priority, disabled) VALUES (:title, :description, :endpoints, :endpoint_names, :endpoint_order, :priority, :disabled)");
   $insert_stmt->bindParam(":title", htmlspecialchars($title));
   $insert_stmt->bindParam(":description", htmlspecialchars($description));
   $insert_stmt->bindParam(":endpoints", json_encode($endpoints));
   $insert_stmt->bindParam(":endpoint_names", json_encode($endpoint_names));
   $insert_stmt->bindParam(":endpoint_order", $endpoint_order);
-  $insert_stmt->bindParam(":priority", $priority);
+  $insert_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
 
   http_response_code(201);
@@ -88,9 +80,10 @@ $endpoints = "";
 $endpoint_names = "";
 $endpoint_order = "";
 $priority = "";
+$disabled = "";
 
 if($id !== null) {
-  $station_stmt = $conn->prepare("SELECT title, description, endpoints, endpoint_names, endpoint_order, priority FROM stations WHERE id = :id");
+  $station_stmt = $conn->prepare("SELECT title, description, endpoints, endpoint_names, endpoint_order, priority, disabled FROM stations WHERE id = :id");
   $station_stmt->bindParam(":id", $id);
   $station_stmt->execute();
   $station = $station_stmt->fetchObject();
@@ -101,8 +94,18 @@ if($id !== null) {
   $endpoint_names = implode(",", json_decode($station->endpoint_names));
   $endpoint_order = $station->endpoint_order;
   $priority = $station->priority;
+  $disabled = $station->disabled;
 }
 ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
+  <title><?= $id === null ? "New station" : "Edit station" ?></title>
+</head>
 
 <body>
   <fieldset>
@@ -137,6 +140,13 @@ if($id !== null) {
         <tr>
           <td>Priority:</td>
           <td><input type="number" name="priority" value="<?= $priority ?>" title="Where the station will be positioned relative to other stations. i.e. Higher or lower" required></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <input type="checkbox" name="disabled" id="disabled" <?= $disabled ? "checked" : "" ?>>
+            <label for="disabled" title="If a station is disabled it won't be accessible by a user.">Disabled</label>
+          </td>
         </tr>
       </table>
       <?php if($id !== null): ?>

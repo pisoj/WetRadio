@@ -21,7 +21,7 @@
 <body>
   <iframe title="Status slanja" name="message" class="message-frame" src="data:text/html;charset=utf-8,%3Chtml%3E%3Chead%3E%3Cstyle%3E%3Aroot%7Bcolor%2Dscheme%3A%20dark%3B%7D%3C%2Fstyle%3E%3C%2Fhead%3E%3Cbody%3E%3C%2Fbody%3E%3C%2Fhtml%3E"></iframe>
   <?php
-  $items_stmt = $conn->prepare("SELECT id, title, subtitle, image, is_replayable, category_id FROM show_items ORDER BY priority DESC");
+  $items_stmt = $conn->prepare("SELECT id, title, subtitle, image, is_replayable, category_id FROM show_items WHERE disabled = 0 ORDER BY priority DESC");
   $items_stmt->execute();
   $show_items = $items_stmt->fetchAll(PDO::FETCH_OBJ);
   foreach ($show_items as $item) {
@@ -63,7 +63,7 @@
   </div>
   <section id="live" class="transition sun">
     <?php
-    $stations_stmt = $conn->prepare("SELECT * FROM stations ORDER BY priority DESC");
+    $stations_stmt = $conn->prepare("SELECT * FROM stations WHERE disabled = 0 ORDER BY priority DESC");
     $stations_stmt->execute();
     while ($station = $stations_stmt->fetchObject()) {
       echo "
@@ -151,7 +151,7 @@
         <?php echo (date("W", strtotime(date_default_timezone_get())) % 2 == 0) ? "Parni" : "Neparni" ?>
       </b></p>
     <?php
-    $category_stmt = $conn->prepare("SELECT id, title FROM show_categories ORDER BY priority DESC");
+    $category_stmt = $conn->prepare("SELECT id, title FROM show_categories WHERE disabled = 0 ORDER BY priority DESC");
     $category_stmt->execute();
     while ($category = $category_stmt->fetchObject()) {
       echo "

@@ -1,16 +1,6 @@
 <?php
 include "../main.php";
-?>
-<!DOCTYPE html>
-<html>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
-</head>
-
-<?php
 if($_SERVER['REQUEST_METHOD'] === "POST") {
   $id = $_POST["id"] ?? null;
   $number_of_fields = $_POST["fields"] ?? 0;
@@ -88,6 +78,15 @@ if($id !== null) {
   $disabled = $send_type->disabled;
 }
 ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
+  <title><?= $id === null ? "New send" : "Edit send" ?></title>
+</head>
 
 <body>
   <fieldset>

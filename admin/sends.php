@@ -1,16 +1,6 @@
 <?php
 include "../main.php";
-?>
-<!DOCTYPE html>
-<html>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
-</head>
-
-<?php
 $id = $_GET["id"];
 $page_size = $_GET["page_size"] ?? 10;
 $page = $_GET["page"] ?? 1;
@@ -40,6 +30,15 @@ function page_url(int $page)
   return "?id={$id}&page_size={$page_size}&page={$page}";
 }
 ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
+  <title>Sends of <?= $send_type_title ?></title>
+</head>
 
 <body>
   <form action="" method="get">

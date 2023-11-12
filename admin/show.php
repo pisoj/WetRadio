@@ -1,21 +1,11 @@
 <?php
 include "../main.php";
-?>
-<!DOCTYPE html>
-<html>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
-</head>
-
-<?php
 function upload_image(): string {
   global $image_mime_types;
   if (!in_array($_FILES["image"]["type"], array_keys($image_mime_types))) {
     http_response_code(400);
-    echo message("Bad File", "File is not an allowed image file.", "error");
+    echo "File is not an allowed image file.";
     die();
   }
 
@@ -36,6 +26,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $is_replayable = $_POST["is_replayable"];
   $category_id = $_POST["category_id"];
   $priority = $_POST["priority"];
+  $disabled = $_POST["disabled"] ?? 0;
 
   if(empty($title)) {
     http_response_code(400);
@@ -54,15 +45,21 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   }
   // Update an existing show
   if($id !== null) {
-    $update_stmt = $conn->prepare("UPDATE show_items SET title = :title, subtitle = :subtitle," . (!empty($_FILES["image"]["tmp_name"]) ? "image = :image," : "") . "is_replayable = :is_replayable, category_id = :category_id, priority = :priority WHERE id = :id");
+    $update_stmt = $conn->prepare("UPDATE show_items SET title = :title, subtitle = :subtitle," . (!empty($_FILES["image"]["tmp_name"]) ? "image = :image," : "") . "is_replayable = :is_replayable, category_id = :category_id, priority = :priority, disabled = :disabled WHERE id = :id");
     $update_stmt->bindParam(":id", htmlspecialchars($id));
     $update_stmt->bindParam(":title", htmlspecialchars($title));
     $update_stmt->bindParam(":subtitle", htmlspecialchars($subtitle));
     $update_stmt->bindParam(":is_replayable", $is_replayable);
     $update_stmt->bindParam(":category_id", htmlspecialchars($category_id));
     $update_stmt->bindParam(":priority", $priority);
+    $update_stmt->bindParam(":disabled", $disabled);
     if(!empty($_FILES["image"]["tmp_name"])) {
       $file_hash_name = upload_image();
+      $select_stmt = $conn->prepare("SELECT image FROM show_items WHERE id = :id");
+      $select_stmt->bindParam(":id", htmlspecialchars($id));
+      $select_stmt->execute();
+      $image = $select_stmt->fetchObject()->image;
+      unlink("../assets/{$image}");
       $update_stmt->bindParam(":image", $file_hash_name);
     }
     $update_stmt->execute();
@@ -71,13 +68,14 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
 
   $file_hash_name = upload_image();
 
-  $insert_stmt = $conn->prepare("INSERT INTO show_items (title, subtitle, image, is_replayable, category_id, priority) VALUES (:title, :subtitle, :image, :is_replayable, :category_id, :priority)");
+  $insert_stmt = $conn->prepare("INSERT INTO show_items (title, subtitle, image, is_replayable, category_id, priority, disabled) VALUES (:title, :subtitle, :image, :is_replayable, :category_id, :priority, :disabled)");
   $insert_stmt->bindParam(":title", htmlspecialchars($title));
   $insert_stmt->bindParam(":subtitle", htmlspecialchars($subtitle));
   $insert_stmt->bindParam(":image", $file_hash_name);
   $insert_stmt->bindParam(":is_replayable", $is_replayable);
   $insert_stmt->bindParam(":category_id", htmlspecialchars($category_id));
   $insert_stmt->bindParam(":priority", $priority);
+  $update_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
 
   http_response_code(201);
@@ -94,10 +92,11 @@ $image = "";
 $is_replayable = "";
 $category_id = "";
 $priority = "";
+$disabled = "";
 
 $id = $_GET["id"] ?? null;
 if($id !== null) {
-  $show_stmt = $conn->prepare("SELECT title, subtitle, image, is_replayable, category_id, priority FROM show_items WHERE id = :id");
+  $show_stmt = $conn->prepare("SELECT title, subtitle, image, is_replayable, category_id, priority, disabled FROM show_items WHERE id = :id");
   $show_stmt->bindParam(":id", $id);
   $show_stmt->execute();
   $show = $show_stmt->fetchObject();
@@ -107,8 +106,18 @@ if($id !== null) {
   $is_replayable = $show->is_replayable;
   $category_id = $show->category_id;
   $priority = $show->priority;
+  $disabled = $show->disabled;
 }
 ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
+  <title><?= $id !== null ? "Edit show" : "New show" ?></title>
+</head>
 
 <body>
   <fieldset>
@@ -124,7 +133,7 @@ if($id !== null) {
           <td><input type="text" name="subtitle" value="<?= $subtitle ?>"></td>
         </tr>
         <tr>
-          <td><?= empty($image) ? "Thumbnail:" : "New thumbnail (optional):" ?></td>
+          <td><?= empty($image) ? "Thumbnail:" : "Change thumbnail (optional):" ?></td>
           <td><input type="file" name="image" accept="<?= $allowed_image_types ?>" <?= empty($image) ? "required" : "" ?>></td>
         </tr>
         <?php if(!empty($image)): ?>
@@ -158,6 +167,13 @@ if($id !== null) {
         <tr>
           <td>Priority:</td>
           <td><input type="number" name="priority" value="<?= $priority ?>" title="Where the show category will be positioned relative to other stations. i.e. Higher or lower" required></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <input type="checkbox" name="disabled" id="disabled" <?= $disabled ? "checked" : "" ?>>
+            <label for="disabled" title="If a show is disabled it won't be accessible by a user.">Disabled</label>
+          </td>
         </tr>
       </table>
       <input type="submit" value="Save">
