@@ -2,6 +2,14 @@
 include "../main.php";
 
 if($_SERVER['REQUEST_METHOD'] === "POST") {
+  $delete = $_POST["delete"] ?? 0;
+  if($delete) {
+    include "delete.php";
+    delete_send_type($_POST["id"]);
+    echo "Deleted";
+    die();
+  }
+
   $id = $_POST["id"] ?? null;
   $number_of_fields = $_POST["fields"] ?? 0;
   $title = $_POST["title"];
@@ -159,6 +167,13 @@ if($id !== null) {
       <?php endfor ?>
       <input type="submit" value="<?= $number_of_fields === 0 ? "Next" : "Save" ?>">
     </form>
+    <?php if($id !== null): ?>
+    <form action="" method="post">
+      <input type="hidden" name="id" value="<?= $id ?>">
+      <input type="hidden" name="delete" value="1">
+      <input type="submit" value="Delete">
+    </form>
+    <?php endif ?>
   </fieldset>
 </body>
 

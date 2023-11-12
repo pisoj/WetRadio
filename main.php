@@ -1,9 +1,11 @@
 <?php
 include "config.php";
 
-session_start();
-if (!($_SESSION["last_sent"] ?? false)) {
-  update_last_sent();
+if(!$nosess) {
+  session_start();
+  if (!($_SESSION["last_sent"] ?? false)) {
+    update_last_sent();
+  }
 }
 function update_last_sent()
 {

@@ -1,6 +1,4 @@
 <?php
-include "../main.php";
-
 function delete_send_item(int $id) {
   global $conn;
   $select_stmt = $conn->prepare("SELECT send_items.data AS data, send_types.fields AS fields FROM send_items INNER JOIN send_types ON send_types.id = send_items.send_type_id WHERE send_items.id = :id");

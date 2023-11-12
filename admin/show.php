@@ -20,6 +20,14 @@ function upload_image(): string {
 }
 
 if($_SERVER['REQUEST_METHOD'] === "POST") {
+  $delete = $_POST["delete"] ?? 0;
+  if($delete) {
+    include "delete.php";
+    delete_show_item($_POST["id"]);
+    echo "Deleted";
+    die();
+  }
+
   $id = $_POST["id"] ?? null;
   $title = $_POST["title"];
   $subtitle = $_POST["subtitle"] ?? null;
@@ -178,6 +186,13 @@ if($id !== null) {
       </table>
       <input type="submit" value="Save">
     </form>
+    <?php if($id !== null): ?>
+    <form action="" method="post">
+      <input type="hidden" name="id" value="<?= $id ?>">
+      <input type="hidden" name="delete" value="1">
+      <input type="submit" value="Delete">
+    </form>
+    <?php endif ?>
   </fieldset>
 </body>
 

@@ -20,6 +20,14 @@ function upload_audio(): string {
 }
 
 if($_SERVER['REQUEST_METHOD'] === "POST") {
+  $delete = $_POST["delete"] ?? 0;
+  if($delete) {
+    include "delete.php";
+    delete_show_recording($_POST["id"]);
+    echo "Deleted";
+    die();
+  }
+
   $id = $_POST["id"] ?? null;
   $show_id = $_POST["show_id"] ?? null;
   $title = $_POST["title"];
@@ -166,6 +174,11 @@ function page_url(int $page)
         </tr>
       </table>
       <input type="submit" value="Save">
+    </form>
+    <form action="" method="post">
+      <input type="hidden" name="id" value="<?= $recording->id ?>">
+      <input type="hidden" name="delete" value="1">
+      <input type="submit" value="Delete">
     </form>
   </fieldset>
   <br>
