@@ -22,13 +22,13 @@ $send_type = $send_type_stmt->fetchObject();
 $send_type_title = $send_type->title;
 $send_type_fields = json_decode($send_type->fields);
 
-$send_items_stmt = $conn->prepare("SELECT data, datetime FROM send_items WHERE id = :id LIMIT :page_size OFFSET :page_offset");
+$send_items_stmt = $conn->prepare("SELECT data, datetime FROM send_items WHERE send_type_id = :id LIMIT :page_size OFFSET :page_offset");
 $send_items_stmt->bindParam(":id", $id);
 $send_items_stmt->bindParam(":page_size", $page_size);
 $send_items_stmt->bindParam(":page_offset", $page_offset);
 $send_items_stmt->execute();
 
-$send_items_total_pages_stmt = $conn->prepare("SELECT count(*) FROM send_items WHERE id = :id");
+$send_items_total_pages_stmt = $conn->prepare("SELECT count(*) FROM send_items WHERE send_type_id = :id");
 $send_items_total_pages_stmt->bindParam(":id", $id);
 $send_items_total_pages_stmt->execute();
 $send_items_total = $send_items_total_pages_stmt->fetchAll(PDO::FETCH_NUM)[0][0];

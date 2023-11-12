@@ -106,8 +106,8 @@ foreach ($send_type_fields as $send_type_field) {
 }
 
 $send_data_json = json_encode($send_data);
-$send_type_fields_stmt = $conn->prepare("INSERT INTO send_items VALUES (:id, :data, datetime('now', 'localtime'))");
-$send_type_fields_stmt->bindParam(":id", $id);
+$send_type_fields_stmt = $conn->prepare("INSERT INTO send_items (send_type_id, data, datetime) VALUES (:send_type_id, :data, datetime('now', 'localtime'))");
+$send_type_fields_stmt->bindParam(":send_type_id", $id);
 $send_type_fields_stmt->bindParam(":data", $send_data_json);
 $send_type_fields_stmt->execute();
 

@@ -50,6 +50,7 @@ class Connection
 
     try {
       $this->conn = new \PDO("sqlite:" . __DIR__ . "/" . $this->db_name);
+      $this->conn->query("PRAGMA foreign_keys = ON;");
     } catch (\PDOException $e) {
       $this->conn = null;
     }
