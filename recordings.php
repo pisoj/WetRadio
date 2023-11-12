@@ -15,7 +15,7 @@ if ($page < 1) {
 include "main.php";
 
 $offset = $recordings_page_size * ($page - 1);
-$total_recordings_stmt = $conn->prepare("SELECT count(id) FROM show_recordings WHERE id = :id");
+$total_recordings_stmt = $conn->prepare("SELECT count(*) FROM show_recordings WHERE show_item_id = :id");
 $total_recordings_stmt->bindParam(":id", $id);
 $total_recordings_stmt->execute();
 $total_recordings = $total_recordings_stmt->fetchAll(PDO::FETCH_NUM)[0][0];
@@ -29,7 +29,7 @@ if ($page > $total_pages && $total_recordings > 0) {
   die();
 }
 
-$recordings_stmt = $conn->prepare("SELECT * FROM show_recordings WHERE id = :id ORDER BY datetime DESC LIMIT :recordings_page_size OFFSET :offset");
+$recordings_stmt = $conn->prepare("SELECT * FROM show_recordings WHERE show_item_id = :id AND disabled = 0 ORDER BY datetime DESC LIMIT :recordings_page_size OFFSET :offset");
 $recordings_stmt->bindParam(":id", $id);
 $recordings_stmt->bindParam(":recordings_page_size", $recordings_page_size);
 $recordings_stmt->bindParam(":offset", $offset);
@@ -95,7 +95,7 @@ function page_url(int $page)
         ($recording->description ? "<p class=\"text-justify\">{$recording->description}</p>" : "") .
         ($recording->title ? "<p class=\"side-info\">{$display_datetime}" : "") .
         "</div>
-            <audio src=\"assets/recordings/{$id}/{$recording->file}\" preload=\"none\" controls></audio>
+            <audio src=\"assets/{$recording->file}\" preload=\"none\" controls></audio>
           </div>
           ";
     }

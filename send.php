@@ -50,7 +50,7 @@ if ($last_sent_seconds_passed < $send_interval_seconds) {
   die();
 }
 
-$send_type_stmt = $conn->prepare("SELECT fields, success_message FROM send_types WHERE id = :id");
+$send_type_stmt = $conn->prepare("SELECT fields, success_message FROM send_types WHERE id = :id AND disabled = 0");
 $send_type_stmt->bindParam(":id", $id);
 $send_type_stmt->execute();
 $send_type = $send_type_stmt->fetchAll(PDO::FETCH_OBJ);

@@ -111,7 +111,7 @@
   <section id="form">
     <h2>Sudjeluj u emisijama</h2>
     <?php
-    $send_types_stmt = $conn->prepare("SELECT id, title, fields, submit_text FROM send_types ORDER BY priority DESC");
+    $send_types_stmt = $conn->prepare("SELECT id, title, fields, submit_text FROM send_types WHERE disabled = 0 ORDER BY priority DESC");
     $send_types_stmt->execute();
     while ($send_type = $send_types_stmt->fetchObject()) {
       $fields = json_decode($send_type->fields, false);
