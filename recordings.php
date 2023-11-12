@@ -15,7 +15,7 @@ if ($page < 1) {
 include "main.php";
 
 $offset = $recordings_page_size * ($page - 1);
-$total_recordings_stmt = $conn->prepare("SELECT count(*) FROM show_recordings WHERE show_item_id = :id");
+$total_recordings_stmt = $conn->prepare("SELECT count(*) FROM show_recordings WHERE show_item_id = :id AND datetime <= datetime('now', 'localtime')");
 $total_recordings_stmt->bindParam(":id", $id);
 $total_recordings_stmt->execute();
 $total_recordings = $total_recordings_stmt->fetchAll(PDO::FETCH_NUM)[0][0];
