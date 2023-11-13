@@ -6,7 +6,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   if($delete) {
     include "delete.php";
     delete_send_type($_POST["id"]);
-    echo "Deleted";
+    header("Location: index.php", true, 303);
     die();
   }
 
@@ -38,6 +38,8 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     $update_stmt->bindParam(":success_message", htmlspecialchars($success_message));
     $update_stmt->bindParam(":disabled", $disabled);
     $update_stmt->execute();
+
+    header("Location: index.php", true, 303);
     die();
   }
 
@@ -60,7 +62,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $insert_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
 
-  http_response_code(201);
+  header("Location: index.php", true, 303);
   die();
 }
 

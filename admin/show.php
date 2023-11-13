@@ -24,7 +24,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   if($delete) {
     include "delete.php";
     delete_show_item($_POST["id"]);
-    echo "Deleted";
+    header("Location: index.php", true, 303);
     die();
   }
 
@@ -71,6 +71,8 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
       $update_stmt->bindParam(":image", $file_hash_name);
     }
     $update_stmt->execute();
+
+    header("Location: index.php", true, 303);
     die();
   }
 
@@ -83,10 +85,10 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $insert_stmt->bindParam(":is_replayable", $is_replayable);
   $insert_stmt->bindParam(":category_id", htmlspecialchars($category_id));
   $insert_stmt->bindParam(":priority", $priority);
-  $update_stmt->bindParam(":disabled", $disabled);
+  $insert_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
 
-  http_response_code(201);
+  header("Location: index.php", true, 303);
   die();
 }
 

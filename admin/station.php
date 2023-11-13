@@ -6,7 +6,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   if($delete) {
     include "delete.php";
     delete_station($_POST["id"]);
-    echo "Deleted";
+    header("Location: index.php", true, 303);
     die();
   }
 
@@ -65,6 +65,8 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     $update_stmt->bindParam(":priority", $priority);
     $update_stmt->bindParam(":disabled", $disabled);
     $update_stmt->execute();
+
+    header("Location: index.php", true, 303);
     die();
   }
 
@@ -74,10 +76,11 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $insert_stmt->bindParam(":endpoints", json_encode($endpoints));
   $insert_stmt->bindParam(":endpoint_names", json_encode($endpoint_names));
   $insert_stmt->bindParam(":endpoint_order", $endpoint_order);
+  $insert_stmt->bindParam(":priority", $priority);
   $insert_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
 
-  http_response_code(201);
+  header("Location: index.php", true, 303);
   die();
 }
 

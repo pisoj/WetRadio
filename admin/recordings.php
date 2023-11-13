@@ -64,6 +64,10 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
       $update_stmt->bindParam(":file", $file_hash_name);
     }
     $update_stmt->execute();
+
+    $page_size = $_POST["page_size"] ?? 10;
+    $page = $_POST["page"] ?? 1;
+    header("Location: recordings.php?id={$show_id}&page_size={$page_size}&page={$page}", true, 303);
     die();
   }
 
@@ -78,10 +82,11 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $insert_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
 
-  http_response_code(201);
+  header("Location: recordings.php?id={$show_id}", true, 303);
   die();
 }
 
+$allowed_audio_types = implode(",", array_keys($audio_mime_types));
 $show_id = $_GET["id"] ?? null;
 $new = $_GET["new"] ?? 0;
 $page_size = $_GET["page_size"] ?? 10;
@@ -143,6 +148,8 @@ function page_url(int $page)
       <table>
         <input type="hidden" name="id" value="<?= $recording->id ?>">
         <input type="hidden" name="show_id" value="<?= $show_id ?>">
+        <input type="hidden" name="page" value="<?= $page ?>">
+        <input type="hidden" name="page_size" value="<?= $page_size ?>">
         <tr>
           <td>Title (optional):</td>
           <td><input type="text" name="title" value="<?= $recording->title ?>" title="If not provided, publish date will be used."></td>
