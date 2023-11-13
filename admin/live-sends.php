@@ -31,6 +31,10 @@ $count = 0;
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
   <title>Live sends</title>
+
+  <script src="../assets/BenzaAMRRecorder.min.js"></script>
+  <script src="amr.js"></script>
+  <script>setInterval(supportAmr, 500)</script>
 </head>
 
 <body>

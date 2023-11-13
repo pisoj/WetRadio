@@ -142,6 +142,9 @@ function page_url(int $page)
         }
       }
       ?>
+  <script src="../assets/BenzaAMRRecorder.min.js"></script>
+  <script src="amr.js"></script>
+  <script>supportAmr()</script>
 </body>
 
 </html>
