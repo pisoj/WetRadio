@@ -95,7 +95,7 @@ function page_url(int $page)
         ($recording->description ? "<p class=\"text-justify\">{$recording->description}</p>" : "") .
         ($recording->title ? "<p class=\"side-info\">{$display_datetime}" : "") .
         "</div>
-            <audio src=\"assets/{$recording->file}\" preload=\"none\" controls></audio>
+            <audio src=\"assets/{$recording->file}\" preload=\"metadata\" controls></audio>
           </div>
           ";
     }
