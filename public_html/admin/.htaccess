@@ -1,0 +1,13 @@
+# Setup admin authentication
+<IfModule !mod_auth_basic.c>
+    LoadModule auth_basic_module modules/mod_auth_basic.so
+</IfModule>
+<IfModule !mod_authn_file.c>
+    LoadModule authn_file_module modules/mod_authn_file.so
+</IfModule>
+
+AuthType Basic
+AuthName "admin"
+AuthBasicProvider file
+AuthUserFile ".htpasswd"
+Require valid-user

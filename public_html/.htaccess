@@ -1,0 +1,6 @@
+#
+# Deny access to the database.
+#
+<FilesMatch "^db$">
+	Require all denied
+</FilesMatch>
