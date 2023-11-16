@@ -9,5 +9,5 @@
 AuthType Basic
 AuthName "admin"
 AuthBasicProvider file
-AuthUserFile ".htpasswd"
+AuthUserFile "/var/www/html/admin/.htpasswd"
 Require valid-user
