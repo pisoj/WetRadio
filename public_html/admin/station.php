@@ -12,7 +12,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
 
   $id = $_POST["id"] ?? null;
   $title = $_POST["title"];
-  $description = $_POST["description"];
+  $description = $_POST["description"] ?? null;
   $raw_endpoints = $_POST["endpoints"];
   $raw_endpoint_names = $_POST["endpoint_names"];
   $endpoint_order = $_POST["endpoint_order"];
@@ -22,11 +22,6 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   if(empty($title)) {
     http_response_code(400);
     echo "Title cannot be empty.";
-    die();
-  }
-  if(empty($description)) {
-    http_response_code(400);
-    echo "Description cannot be empty.";
     die();
   }
   if(empty($raw_endpoints)) {
@@ -128,8 +123,8 @@ if($id !== null) {
           <td><input type="text" name="title" value="<?= $title ?>" required></td>
         </tr>
         <tr>
-          <td>Description:</td>
-          <td><input type="text" name="description" value="<?= $description ?>" required></td>
+          <td>Description (optional):</td>
+          <td><input type="text" name="description" value="<?= $description ?>"></td>
         </tr>
         <tr>
           <td>Endpoint URLs:</td>
