@@ -85,7 +85,7 @@ Basically when you disable something, it's data (including images, audio files..
 
 First clone the repo:
 ```shell
-$ git clone https://github.com/WetRadio/WetRadio.git
+$ git clone https://github.com/pisoj/WetRadio.git
 ```
 
 Create a user for the admin panel:
@@ -107,7 +107,7 @@ $ docker run -d -p 80:80 -v /path_to_the_cloned_repository/public_html:/var/www/
 
 First clone the repo:
 ```shell
-$ git clone https://github.com/WetRadio/WetRadio.git
+$ git clone https://github.com/pisoj/WetRadio.git
 ```
 
 Create a user for the admin panel:
