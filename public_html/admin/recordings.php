@@ -156,7 +156,7 @@ function page_url(int $page)
         </tr>
         <tr>
           <td>Description (optional):</td>
-          <td><input type="text" name="description" value="<?= $recording->description ?>"></td>
+          <td><textarea type="text" name="description"><?= $recording->description ?></textarea></td>
         </tr>
         <tr>
           <td><?= empty($recording->file) ? "File:" : "Change file (optional):" ?></td>

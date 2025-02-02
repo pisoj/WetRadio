@@ -138,6 +138,9 @@ data.endpoints {
 .text-justify {
   text-align: justify;
 }
+.respect-newline {
+  white-space: pre-wrap;
+}
 .side-info {
   color: var(--color-muted-text);
   text-align: right;

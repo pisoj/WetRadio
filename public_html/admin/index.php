@@ -67,6 +67,13 @@ $send_types = $conn->query("SELECT id, title FROM send_types")->fetchAll(PDO::FE
       <li><a href="send.php">➕ New send type</a></li>
     </menu>
   </fieldset>
+
+  <fieldset>
+    <legend>Preferences</legend>
+    <menu>
+      <li><a href="preferences.php">Preferences</a></li>
+    </menu>
+  </fieldset>
 </body>
 
 </html>

@@ -18,6 +18,11 @@
   <noscript><link rel="stylesheet" href="assets/no-js.css" /></noscript>
 </head>
 
+<?php
+$preferences_boolean = $conn->query("SELECT key, value FROM preferences_boolean")->fetchAll(PDO::FETCH_KEY_PAIR);
+$preferences_string = $conn->query("SELECT key, value FROM preferences_string")->fetchAll(PDO::FETCH_KEY_PAIR);
+?>
+
 <body>
   <iframe title="Status slanja" name="message" class="message-frame" src="data:text/html;charset=utf-8,%3Chtml%3E%3Chead%3E%3Cstyle%3E%3Aroot%7Bcolor%2Dscheme%3A%20dark%3B%7D%3C%2Fstyle%3E%3C%2Fhead%3E%3Cbody%3E%3C%2Fbody%3E%3C%2Fhtml%3E"></iframe>
   <?php
@@ -61,11 +66,15 @@
       </div>
     </div>
   </div>
-  <section id="live" class="transition sun">
-    <?php
+  <?php
     $stations_stmt = $conn->prepare("SELECT * FROM stations WHERE disabled = 0 ORDER BY priority DESC");
     $stations_stmt->execute();
-    while ($station = $stations_stmt->fetchObject()) {
+    $stations = $stations_stmt->fetchAll(PDO::FETCH_OBJ);
+    if (count($stations) > 0):
+  ?>
+  <section id="live" class="transition sun">
+    <?php
+    foreach ($stations as $station) {
       echo "
           <div class=\"player\">
             <div class=\"info\">
@@ -108,8 +117,13 @@
     ?>
     <span class="curve"></span>
   </section>
+  <?php endif ?>
   <section id="form">
-    <h2>Sudjeluj u emisijama</h2>
+    <?php
+    if ($preferences_string['title_above_sends'] ?? '') {
+      echo "<h2>{$preferences_string['title_above_sends']}</h2>";
+    }
+    ?>
     <?php
     $send_types_stmt = $conn->prepare("SELECT id, title, fields, submit_text FROM send_types WHERE disabled = 0 ORDER BY priority DESC");
     $send_types_stmt->execute();
@@ -147,9 +161,11 @@
     ?>
   </section>
   <section id="show" class="box">
+    <?php if (!($preferences_boolean['disable_even_odd_week'] ?? true)) : ?>
     <p>Ovaj tjedan: <b>
         <?php echo (date("W", strtotime(date_default_timezone_get())) % 2 == 0) ? "Parni" : "Neparni" ?>
       </b></p>
+    <?php endif ?>
     <?php
     $category_stmt = $conn->prepare("SELECT id, title FROM show_categories WHERE disabled = 0 ORDER BY priority DESC");
     $category_stmt->execute();
