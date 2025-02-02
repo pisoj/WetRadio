@@ -88,6 +88,11 @@ First clone the repo:
 $ git clone https://github.com/pisoj/WetRadio.git
 ```
 
+Create the database:
+```shell
+$ sqlite3 WetRadio/public_html/db < WetRadio/db.init.sql
+```
+
 Create a user for the admin panel:
 ```shell
 $ htpasswd -c WetRadio/public_html/admin/.htpasswd my_username
@@ -110,6 +115,11 @@ First clone the repo:
 $ git clone https://github.com/pisoj/WetRadio.git
 ```
 
+Create the database:
+```shell
+$ sqlite3 WetRadio/public_html/db < WetRadio/db.init.sql
+```
+
 Create a user for the admin panel:
 ```shell
 $ htpasswd -c WetRadio/public_html/admin/.htpasswd my_username
@@ -121,3 +131,20 @@ $ cp -r WetRadio/public_html my/document/root
 ```
 
 > Enshure your web server supports `.htaccess` files, instead you will need to manually configure the web server for security of the database and to **disallow unauthorized access to the admin panel**.
+
+## Updating
+
+Go to the location where you cloned the repository:
+```shell
+$ cd /path_to_cloned_repo/WetRadio/
+```
+
+Update the files:
+```shell
+$ git pull
+```
+
+Update the database:
+```shell
+$ sqlite3 public_html/db < db.init.sql
+```
