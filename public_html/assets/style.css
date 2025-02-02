@@ -121,6 +121,9 @@ button {
   -webkit-appearance: none;
   appearance: none;
 }
+button > svg {
+  height: 1em;
+}
 audio {
   width: 100%;
 }
@@ -176,6 +179,9 @@ data.endpoints {
 .play-stop > button {
   font-size: 2.5rem;
   transition: transform 0.3s ease-out, visibility 0.3s;
+}
+.play-stop > button > svg {
+  fill: var(--color-text);
 }
 .play-stop > button:first-of-type {
   position: absolute;
@@ -270,19 +276,21 @@ h3 + .card-grid {
   --icon-button-size: 2.4rem;
   height: var(--icon-button-size);
   width: var(--icon-button-size);
-  font-size: calc(var(--icon-button-size) / 100 * 65);
   border-radius: 50%;
   transition: background-color 0.15s ease-in;
-}
-.icon-button::before {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 .icon-button:hover,
 .icon-button:focus {
   background-color: var(--color-lightened);
+}
+.icon-button > svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--icon-button-size) / 100 * 65);
+  height: calc(var(--icon-button-size) / 100 * 65);
+  fill: var(--color-text);
 }
 
 .window {
@@ -373,14 +381,14 @@ button[type="submit"] {
   float: right;
   cursor: pointer;
 }
-button[type="submit"]::after {
-  content: " ";
-  font: var(--fa-font-solid);
-  transition: font-size 0.3s ease-in-out;
-  font-size: 0;
+button[type="submit"] > svg {
+  transition: height 0.3s ease-in-out, padding 0.3s ease-in-out;
+  height: 0;
+  padding-left: 0;
 }
-button[type="submit"]:hover::after {
-  font-size: 1em;
+button[type="submit"]:hover > svg {
+  height: 1em;
+  padding-left: .25ch;
 }
 
 .message-frame {
@@ -459,6 +467,9 @@ button[type="submit"]:hover::after {
   flex-direction: column;
   height: 100vh;
 }
+.recorder .icon > svg {
+  fill: var(--color-text);
+}
 .recorder > .controls {
   bottom: 0;
   width: 100%;
@@ -468,10 +479,10 @@ button[type="submit"]:hover::after {
   justify-content: space-between;
   background-color: var(--color-background);
 }
-.recorder .controls > .icon-main {
+.recorder .controls > .icon-main > svg {
   display: none;
 }
-.recorder[data-status="recording"] > .controls > .icon-main {
+.recorder[data-status="recording"] > .controls > .icon-main > svg {
   display: block;
 }
 .recorder > .controls > button:last-child {
@@ -502,7 +513,7 @@ button[type="submit"]:hover::after {
 .recorder[data-status="playable"] > .main > .player .play-stop > .icon {
   visibility: visible;
 }
-.recorder > .main > .icon-main {
+.recorder > .main > .icon-main > svg {
   transition: transform 1s ease-in-out, font-size 1s ease-in-out,
     bottom 0.5s ease-in-out, color 1s ease-out;
   position: absolute;
@@ -511,9 +522,9 @@ button[type="submit"]:hover::after {
   transform: translate(-50%, -25%);
   z-index: 1;
 }
-.recorder[data-status="recording"] > .main > .icon-main {
+.recorder[data-status="recording"] > .main > .icon-main > svg {
   bottom: 50%;
-  color: red;
+  fill: red;
   font-size: calc(2.5rem * 5);
   transform: translate(-50%, 25%);
   animation: 2s ease-in-out infinite alternate center-breathe;

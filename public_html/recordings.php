@@ -24,7 +24,7 @@ if ($page > $total_pages && $total_recordings > 0) {
   http_response_code(404);
   echo "
         <h1>No recordings found</h1>
-        <p>You may have entered invalid id or page number.</p>
+        <p>You may have entered an invalid id or page number.</p>
     ";
   die();
 }
@@ -41,6 +41,14 @@ $show_title_stmt = $conn->prepare("SELECT title FROM show_items WHERE id = :id")
 $show_title_stmt->bindParam(":id", $id);
 $show_title_stmt->execute();
 $show_title = $show_title_stmt->fetchAll(PDO::FETCH_NUM)[0][0];
+if (!$show_title) {
+  http_response_code(404);
+  echo "
+        <h1>A show with id of {$id} does not exist</h1>
+        <p>You may have entered an invalid id.</p>
+    ";
+  die();
+}
 
 function page_url(int $page)
 {
@@ -56,7 +64,7 @@ function page_url(int $page)
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><?php echo $show_title ?> - Snimke</title>
+  <title><?php echo $show_title ?></title>
   <link rel="stylesheet" href="assets/style.css" />
   <style>
     :root {

@@ -29,7 +29,7 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   }
 
   $id = $_POST["id"] ?? null;
-  $title = $_POST["title"];
+  $title = trim($_POST["title"]);
   $subtitle = $_POST["subtitle"] ?? null;
   $is_replayable = $_POST["is_replayable"];
   $category_id = $_POST["category_id"];
