@@ -14,9 +14,6 @@ $preferences_string = $conn->query("SELECT key, value FROM preferences_string")-
   <meta name="description" content="<?= $preferences_string["metadata_description"] ?? '' ?>">
   <meta name="keywords" content="<?= $preferences_string["metadata_keywords"] ?? '' ?>">
   <link rel="stylesheet" href="assets/style.css" />
-  <noscript>
-    <link rel="stylesheet" href="no-js.css" />
-  </noscript>
   <title><?= $preferences_string["metadata_title"] ?? '' ?></title>
   <noscript><link rel="stylesheet" href="assets/no-js.css" /></noscript>
 </head>

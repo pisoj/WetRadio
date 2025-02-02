@@ -1,7 +1,10 @@
 <?php
 include "../main.php";
 
-function upload_audio(): string {
+function upload_audio_if_should(): string | null {
+  if(empty($_FILES["file"]["tmp_name"])) {
+    return null;
+  }
   global $audio_mime_types;
   if (!in_array($_FILES["file"]["type"], array_keys($audio_mime_types))) {
     http_response_code(400);
@@ -24,7 +27,19 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   if($delete) {
     include "delete.php";
     delete_show_recording($_POST["id"]);
-    echo "Deleted";
+    $show_id = $_POST["show_id"];
+    header("Location: recordings.php?id={$show_id}", true, 303);
+    die();
+  }
+
+  $delete_uploaded_file = $_POST["delete_uploaded_file"] ?? 0;
+  if($delete_uploaded_file) {
+    include "delete.php";
+    delete_show_recording_uploaded_file($_POST["id"]);
+    $show_id = $_POST["show_id"];
+    $page_size = $_POST["page_size"] ?? 10;
+    $page = $_POST["page"] ?? 1;
+    header("Location: recordings.php?id={$show_id}&page_size={$page_size}&page={$page}", true, 303);
     die();
   }
 
@@ -32,6 +47,9 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
   $show_id = $_POST["show_id"] ?? null;
   $title = $_POST["title"];
   $description = $_POST["description"];
+  $default_file_label = htmlspecialchars(trim($_POST["file_label"])) ?? null;
+  $additional_files_urls = explode(',', ($_POST["additional_files_urls"] ?? ''));
+  $additional_files_labels = explode(',', ($_POST["additional_files_labels"] ?? ''));
   $datetime = $_POST["datetime"];
   $disabled = $_POST["disabled"] ?? 0;
 
@@ -45,22 +63,40 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     echo "Datetime must be provided.";
     die();
   }
+  if(count($additional_files_labels) !== count($additional_files_urls)) {
+    http_response_code(400);
+    echo "The length of additional file URLs and additional file labels should match.";
+    die();
+  }
+
+  $additional_files = [];
+  if(count($additional_files_labels) > 0) {
+    for($i = 0; $i < count($additional_files_urls); $i++) {
+      array_push($additional_files, [
+        "url" => htmlspecialchars(trim($additional_files_urls[$i])),
+        "label" => htmlspecialchars(trim($additional_files_labels[$i]))
+      ]);
+    }
+  }
 
   if(!empty($id)) {
-    $update_stmt = $conn->prepare("UPDATE show_recordings SET title = :title, description = :description," . (!empty($_FILES["file"]["tmp_name"]) ? "file = :file," : "") . "datetime = :datetime, disabled = :disabled WHERE id = :id");
+    $file_hash_name = upload_audio_if_should();
+
+    $update_stmt = $conn->prepare("UPDATE show_recordings SET title = :title, description = :description," . ($file_hash_name ? "file = :file," : "") . "file_label = :file_label, additional_files = :additional_files, datetime = :datetime, disabled = :disabled WHERE id = :id");
     $update_stmt->bindParam(":id", htmlspecialchars($id));
     $update_stmt->bindParam(":title", htmlspecialchars($title));
     $update_stmt->bindParam(":description", htmlspecialchars($description));
+    $update_stmt->bindParam(":file_label", $default_file_label);
+    $update_stmt->bindParam(":additional_files", json_encode($additional_files));
     $update_stmt->bindParam(":datetime", htmlspecialchars($datetime));
     $update_stmt->bindParam(":disabled", $disabled);
-    if(!empty($_FILES["file"]["tmp_name"])) {
-      $file_hash_name = upload_audio();
+
+    if($file_hash_name) {
       $select_stmt = $conn->prepare("SELECT file FROM show_recordings WHERE id = :id");
       $select_stmt->bindParam(":id", htmlspecialchars($id));
       $select_stmt->execute();
       $file = $select_stmt->fetchObject()->file;
       unlink("../assets/{$file}");
-
       $update_stmt->bindParam(":file", $file_hash_name);
     }
     $update_stmt->execute();
@@ -71,13 +107,17 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     die();
   }
 
-  $file_hash_name = upload_audio();
+  $file_hash_name = upload_audio_if_should();
 
-  $insert_stmt = $conn->prepare("INSERT INTO show_recordings (show_item_id, title, description, file, datetime, disabled) VALUES (:show_item_id, :title, :description, :file, :datetime, :disabled)");
+  $insert_stmt = $conn->prepare("INSERT INTO show_recordings (show_item_id, title, description, " . ($file_hash_name ? 'file, ' : '') . "file_label, additional_files, datetime, disabled) VALUES (:show_item_id, :title, :description, " . ($file_hash_name ? ':file, ' : '') . ":file_label, :additional_files, :datetime, :disabled)");
   $insert_stmt->bindParam(":show_item_id", htmlspecialchars($show_id));
   $insert_stmt->bindParam(":title", htmlspecialchars($title));
   $insert_stmt->bindParam(":description", htmlspecialchars($description));
-  $insert_stmt->bindParam(":file", $file_hash_name);
+  if ($file_hash_name) {
+    $insert_stmt->bindParam(":file", $file_hash_name);
+  }
+  $insert_stmt->bindParam(":file_label", $default_file_label);
+  $insert_stmt->bindParam(":additional_files", json_encode($additional_files));
   $insert_stmt->bindParam(":datetime", htmlspecialchars($datetime));
   $insert_stmt->bindParam(":disabled", $disabled);
   $insert_stmt->execute();
@@ -104,7 +144,7 @@ $show_item_stmt->bindParam(":id", $show_id);
 $show_item_stmt->execute();
 $show_title = $show_item_stmt->fetchObject()->title;
 if(!$new) {
-  $show_recordings_stmt = $conn->prepare("SELECT id, title, description, file, datetime, disabled FROM show_recordings WHERE show_item_id = :id LIMIT :page_size OFFSET :offset");
+  $show_recordings_stmt = $conn->prepare("SELECT id, title, description, file, file_label, additional_files, datetime, disabled FROM show_recordings WHERE show_item_id = :id LIMIT :page_size OFFSET :offset");
   $show_recordings_stmt->bindParam(":id", $show_id);
   $show_recordings_stmt->bindParam(":page_size", $page_size);
   $show_recordings_stmt->bindParam(":offset", $page_offset);
@@ -159,15 +199,35 @@ function page_url(int $page)
           <td><textarea type="text" name="description"><?= $recording->description ?></textarea></td>
         </tr>
         <tr>
-          <td><?= empty($recording->file) ? "File:" : "Change file (optional):" ?></td>
-          <td><input type="file" name="file" accept="<?= $allowed_audio_types ?>" <?= empty($recording->file) ? "required" : "" ?>></td>
+          <td><?= empty($recording->file) ? "Upload file (php.ini max size: " . ini_get("upload_max_filesize") . "):" : "Change uploaded file" . ini_get("upload_max_filesize") . ":" ?></td>
+          <td><input type="file" name="file" accept="<?= $allowed_audio_types ?>"></td>
         </tr>
         <?php if(!empty($recording->file)): ?>
         <tr>
-          <td>Current file:</td>
+          <td>Current uploaded file:</td>
           <td><audio src="../assets/<?= $recording->file ?>" preload="auto" controls></audio></td>
         </tr>
         <?php endif ?>
+        <tr>
+          <td>Default file label (optional):</td>
+          <td><input type="text" name="file_label" value="<?= $recording->file_label ?>" placeholder="128kbps MP3" title="Informs the user about what kind of audio file they are listening to."></td>
+        </tr>
+        <?php
+          $recording_additional_files_urls = "";
+          $recording_additional_files_labels = "";
+          foreach (json_decode($recording->additional_files) as $additional_file) {
+            $recording_additional_files_urls = $recording_additional_files_urls . ($recording_additional_files_urls ? ',' : '') . $additional_file->url;
+            $recording_additional_files_labels = $recording_additional_files_labels . ($recording_additional_files_labels ? ',' : '') . $additional_file->label;
+          }
+        ?>
+        <tr>
+          <td>Additional files URLs (optional):</td>
+          <td><input type="text" name="additional_files_urls" value="<?= $recording_additional_files_urls ?>" placeholder="http://filesrv.com/show.flac,http://anotherfilesrv.com/show-320.ogg" title="Comma separated list of URLs with different audio quality recordings of the same show for users to choose from."></td>
+        </tr>
+        <tr>
+          <td>Additional files labels:</td>
+          <td><input type="text" name="additional_files_labels" value="<?= $recording_additional_files_labels ?>" placeholder="44kHz FLAC,320kbps Vorbis" title="Comma separated list of matching user-facing labels for the additional files."></td>
+        </tr>
         <tr>
           <td>Publish date:</td>
           <td><input type="datetime-local" name="datetime" value="<?= $recording->datetime ?>" title="If in future, the recording won't be accessible to users until its publish date." required></td>
@@ -184,9 +244,20 @@ function page_url(int $page)
     </form>
     <form action="" method="post">
       <input type="hidden" name="id" value="<?= $recording->id ?>">
+      <input type="hidden" name="show_id" value="<?= $show_id ?>">
       <input type="hidden" name="delete" value="1">
       <input type="submit" value="Delete">
     </form>
+    <?php if(!empty($recording->file)): ?>
+      <form action="" method="post">
+        <input type="hidden" name="id" value="<?= $recording->id ?>">
+        <input type="hidden" name="show_id" value="<?= $show_id ?>">
+        <input type="hidden" name="page" value="<?= $page ?>">
+        <input type="hidden" name="page_size" value="<?= $page_size ?>">
+        <input type="hidden" name="delete_uploaded_file" value="1">
+        <input type="submit" value="Delete uploaded file">
+      </form>
+    <?php endif ?>
   </fieldset>
   <br>
   <?php } while($recording = $new ? 0 : $show_recordings_stmt->fetchObject()); ?>

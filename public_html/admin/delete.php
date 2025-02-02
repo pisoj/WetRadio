@@ -54,9 +54,27 @@ function delete_show_recording(int $id) {
   $select_show_recording_stmt->execute();
   $file = $select_show_recording_stmt->fetchObject()->file;
 
-  unlink("../assets/{$file}");
+  if ($file) {
+    unlink("../assets/{$file}");
+  }
 
   $delete_show_recording_stmt = $conn->prepare("DELETE FROM show_recordings WHERE id = :id");
+  $delete_show_recording_stmt->bindParam(":id", $id);
+  $delete_show_recording_stmt->execute();
+}
+
+function delete_show_recording_uploaded_file(int $id) {
+  global $conn;
+  $select_show_recording_stmt = $conn->prepare("SELECT file FROM show_recordings WHERE id = :id");
+  $select_show_recording_stmt->bindParam(":id", $id);
+  $select_show_recording_stmt->execute();
+  $file = $select_show_recording_stmt->fetchObject()->file;
+
+  if ($file) {
+    unlink("../assets/{$file}");
+  }
+
+  $delete_show_recording_stmt = $conn->prepare("UPDATE show_recordings SET file = NULL WHERE id = :id");
   $delete_show_recording_stmt->bindParam(":id", $id);
   $delete_show_recording_stmt->execute();
 }

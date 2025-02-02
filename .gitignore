@@ -8,18 +8,18 @@ node_modules
 public_html/db
 
 # Audio files that may be uploaded
-.3gp
-.aac
-.amr
-.flac
-.m4a
-.mp3
-.oga
-.ogg
-.opus
-.aif
-.aiff
-.wav
+**/*.3gp
+**/*.aac
+**/*.amr
+**/*.flac
+**/*.m4a
+**/*.mp3
+**/*.oga
+**/*.ogg
+**/*.opus
+**/*.aif
+**/*.aiff
+**/*.wav
 
 # Uploaded images
 public_html/assets/*.jpg

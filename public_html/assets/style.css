@@ -204,7 +204,6 @@ data.endpoints {
     auto-fit,
     minmax(min(30rem, 100%), max-content)
   );
-  gap: 3rem;
   margin-bottom: 3rem;
 }
 .recordings-grid > div {
@@ -215,6 +214,18 @@ data.endpoints {
 .recordings-grid audio {
   box-sizing: border-box;
   padding: 0 1rem 0 1rem;
+}
+
+.recording {
+  background-color: var(--color-background-default);
+  border-radius: var(--border-radius);
+  margin: 1rem;
+  padding-bottom: 1rem;
+}
+.recording select {
+  margin-left: auto;
+  margin-bottom: 1rem;
+  margin-right: 2rem;
 }
 
 .box {

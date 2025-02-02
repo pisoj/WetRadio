@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS 'send_types' ('id' INTEGER PRIMARY KEY NOT NULL, 'tit
 
 CREATE TABLE IF NOT EXISTS "send_items" ('id' INTEGER PRIMARY KEY NOT NULL, 'send_type_id' INTEGER NOT NULL, 'data' TEXT NOT NULL, 'datetime' DATETIME NOT NULL, FOREIGN KEY ('send_type_id') REFERENCES "send_types" ('id') ON UPDATE CASCADE ON DELETE CASCADE);
 
-CREATE TABLE IF NOT EXISTS "show_recordings" ('id' INTEGER PRIMARY KEY NOT NULL, 'show_item_id' INTEGER NOT NULL, 'title' TEXT, 'description' TEXT, 'file' TEXT NOT NULL, 'datetime' DATETIME NOT NULL, 'disabled' BOOLEAN NOT NULL, FOREIGN KEY ('show_item_id') REFERENCES "show_items" ('id') ON UPDATE CASCADE ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS "show_recordings" ('id' INTEGER PRIMARY KEY NOT NULL, 'show_item_id' INTEGER NOT NULL, 'title' TEXT, 'description' TEXT, 'file' TEXT, 'file_label' TEXT, 'additional_files' TEXT, 'datetime' DATETIME NOT NULL, 'disabled' BOOLEAN NOT NULL, FOREIGN KEY ('show_item_id') REFERENCES "show_items" ('id') ON UPDATE CASCADE ON DELETE CASCADE);
 
 CREATE TABLE IF NOT EXISTS "preferences_boolean" ('key' TEXT PRIMARY KEY NOT NULL, 'value' BOOLEAN NOT NULL);
 

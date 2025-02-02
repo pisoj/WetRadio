@@ -66,6 +66,7 @@ function page_url(int $page)
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><?php echo $show_title ?></title>
   <link rel="stylesheet" href="assets/style.css" />
+  <noscript><link rel="stylesheet" href="assets/no-js.css" /></noscript>
   <style>
     :root {
       --color-background: var(--color-background-alternative);
@@ -100,15 +101,27 @@ function page_url(int $page)
       $display_datetime = $recording->show_time ?? false ? $datetime_formatter->format("j.n.Y. G:i") : $datetime_formatter->format("j.n.Y.");
 
       echo "
-          <div>
+          <div class=\"recording\">
             <div class=\"box\">
               <h2>" . ($recording->title ? $recording->title : $display_datetime) . "</h2>" .
         ($recording->description ? "<p class=\"text-justify respect-newline\">{$recording->description}</p>" : "") .
         ($recording->title ? "<p class=\"side-info\">{$display_datetime}" : "") .
-        "</div>
-            <audio src=\"assets/{$recording->file}\" preload=\"metadata\" controls></audio>
-          </div>
-          ";
+        "</p></div><select class=\"js-only\"></select>";
+        if(!empty($recording->file)) {
+          echo "<noscript><h3 style=\"margin-left: 2rem\">" . ($recording->file_label ? $recording->file_label : "Default") . "</h3></noscript>" .
+            "<audio data-index=\"0\" src=\"assets/{$recording->file}\" preload=\"none\" controls></audio>";
+        }
+      
+      $additional_files = json_decode($recording->additional_files);
+      for($j = 0; $j < count($additional_files); $j++) {
+        $additional_file = $additional_files[$j];
+        if (empty($additional_file->url)) { continue; }
+        echo "<noscript><h3 style=\"margin-left: 2rem\">{$additional_file->label}</h3></noscript>";
+        if(!empty($recording->file) || $j != 0) { echo "<noscript>"; }
+        echo "<audio data-index=\"" . (empty($recording->file) ? $j : $j + 1) . "\" src=\"{$additional_file->url}\" preload=\"none\" controls></audio>";
+        if(!empty($recording->file) || $j != 0) { echo "</noscript>"; }
+      }
+      echo "</div>";
     }
     ?>
   </div>
@@ -177,6 +190,7 @@ function page_url(int $page)
       ?>
     </div>
   </div>
+  <script src="assets/recordings.js"></script>
 </body>
 
 </html>
