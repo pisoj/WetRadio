@@ -2,5 +2,33 @@
 phpinfo.php
 phpliteadmin
 node_modules
-assets/sends/c9aae9c48e6150ebd059b8350f95d597097848b8a557e4809674d70de6005b0bd6851ba1aca26d31cbf2612deef4b26d65d668e9dccbf75f631b5be87a2301e8.ogg
 .vscode
+.htpasswd
+
+public_html/db
+
+# Audio files that may be uploaded
+.3gp
+.aac
+.amr
+.flac
+.m4a
+.mp3
+.oga
+.ogg
+.opus
+.aif
+.aiff
+.wav
+
+# Uploaded images
+public_html/assets/*.jpg
+public_html/assets/*.png
+public_html/assets/*.webp
+public_html/assets/*.bmp
+public_html/assets/*.gif
+public_html/assets/*.avif
+
+# Sends must be an empty directory
+public_html/assets/sends/**
+!public_html/assets/sends/.gitkeep
