@@ -144,7 +144,7 @@ $show_item_stmt->bindParam(":id", $show_id);
 $show_item_stmt->execute();
 $show_title = $show_item_stmt->fetchObject()->title;
 if(!$new) {
-  $show_recordings_stmt = $conn->prepare("SELECT id, title, description, file, file_label, additional_files, datetime, disabled FROM show_recordings WHERE show_item_id = :id LIMIT :page_size OFFSET :offset ORDER BY datetime DESC");
+  $show_recordings_stmt = $conn->prepare("SELECT id, title, description, file, file_label, additional_files, datetime, disabled FROM show_recordings WHERE show_item_id = :id ORDER BY datetime DESC LIMIT :page_size OFFSET :offset");
   $show_recordings_stmt->bindParam(":id", $show_id);
   $show_recordings_stmt->bindParam(":page_size", $page_size);
   $show_recordings_stmt->bindParam(":offset", $page_offset);
