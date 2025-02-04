@@ -1,9 +1,9 @@
 <?php
 
 $send_interval_seconds = 15;
-$send_file_max_size = "1M";
+$send_file_max_size = "2M";
 
-$recordings_page_size = 8;
+$recordings_page_size = 20;
 
 $audio_mime_types = array(
   "audio/3gpp" => ".3gp",
@@ -23,13 +23,15 @@ $audio_mime_types = array(
   "audio/x-aiff" => ".aif",
   "audio/wave" => ".wav",
   "audio/wav" => ".wav",
-  "audio/x-wav" => ".wav"
+  "audio/x-wav" => ".wav",
+  "audio/vnd.wave" => ".wav"
 );
 
 $image_mime_types = array(
   "image/png" => ".png",
   "image/webp" => ".webp",
   "image/jpeg" => ".jpg",
+  "image/avif" => ".avif"
 );
 
 $db_name = "db";

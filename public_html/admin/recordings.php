@@ -144,7 +144,7 @@ $show_item_stmt->bindParam(":id", $show_id);
 $show_item_stmt->execute();
 $show_title = $show_item_stmt->fetchObject()->title;
 if(!$new) {
-  $show_recordings_stmt = $conn->prepare("SELECT id, title, description, file, file_label, additional_files, datetime, disabled FROM show_recordings WHERE show_item_id = :id LIMIT :page_size OFFSET :offset");
+  $show_recordings_stmt = $conn->prepare("SELECT id, title, description, file, file_label, additional_files, datetime, disabled FROM show_recordings WHERE show_item_id = :id LIMIT :page_size OFFSET :offset ORDER BY datetime DESC");
   $show_recordings_stmt->bindParam(":id", $show_id);
   $show_recordings_stmt->bindParam(":page_size", $page_size);
   $show_recordings_stmt->bindParam(":offset", $page_offset);
@@ -199,7 +199,7 @@ function page_url(int $page)
           <td><textarea type="text" name="description"><?= $recording->description ?></textarea></td>
         </tr>
         <tr>
-          <td><?= empty($recording->file) ? "Upload file (php.ini max size: " . ini_get("upload_max_filesize") . "):" : "Change uploaded file" . ini_get("upload_max_filesize") . ":" ?></td>
+          <td><?= (empty($recording->file) ? "Upload file" : "Change uploaded file") . " (php.ini max file size: " . ini_get("upload_max_filesize") . ", max post size: " . ini_get("post_max_size") . "):" ?></td>
           <td><input type="file" name="file" accept="<?= $allowed_audio_types ?>"></td>
         </tr>
         <?php if(!empty($recording->file)): ?>
