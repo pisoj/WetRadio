@@ -22,8 +22,10 @@
   --color-background-live: var(--color-info);
 
   --border-radius: 0rem;
+  --border-size: 1px;
 
   --transition-height: 15rem;
+  --page-max-width: 150ch;
 
   color-scheme: dark;
   font-family: Verdana, sans-serif;
@@ -36,6 +38,18 @@ body {
   margin: 0;
   background-color: var(--color-background);
   height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+body:has(dialog[open]) {
+    overflow: hidden;
+}
+main {
+  width: 100%;
+  height: 100%;
+  max-width: var(--page-max-width);
 }
 
 /* Transitions */
@@ -111,13 +125,20 @@ a {
 a:hover {
   text-decoration: underline;
 }
-h4,
+h3 {
+  font-size: 1.3rem;
+}
+h4 {
+  font-size: 1.04rem;
+  font-weight: normal;
+  margin: 0;
+}
 h5,
 h6,
 p {
   margin: 0;
-  font-size: medium;
   font-weight: normal;
+  font-size: 1rem;
 }
 button {
   cursor: pointer;
@@ -166,15 +187,15 @@ data.endpoints {
 .player:first-child {
   margin-top: 0;
 }
-.player > .info[data-position-current] {
+.player-info[data-position-current] {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.player > .info[data-position-current]::after {
+.player-info[data-position-current]::after {
   content: attr(data-position-current) " / " attr(data-position-end);
 }
-.player > .controls {
+.player-controls {
   display: flex;
   justify-content: space-between;
   margin-top: 1.5rem;
@@ -219,7 +240,8 @@ data.endpoints {
 }
 
 .recording {
-  background-color: var(--color-background-default);
+  background-color: var(--color-background-alternative);
+  border: var(--border-size) solid var(--color-background-field);
   border-radius: var(--border-radius);
   margin: 1rem;
   padding-bottom: 1rem;
@@ -242,7 +264,7 @@ data.endpoints {
   height: 12rem;
   width: 26rem;
   max-width: 100%;
-  border: 2px solid var(--color-background-field);
+  border: var(--border-size) solid var(--color-background-field);
   border-radius: var(--border-radius);
 }
 .card > img {
@@ -259,7 +281,7 @@ data.endpoints {
   padding: 0.4rem 0.6rem;
   -webkit-backdrop-filter: blur(0.5rem) saturate(.7);
   backdrop-filter: blur(20px) saturate(.7) brightness(.5);
-  border-top: 2px solid var(--color-background-field);
+  border-top: var(--border-size) solid var(--color-background-field);
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
 }
@@ -271,11 +293,17 @@ data.endpoints {
     minmax(min(18rem, 100%), max-content)
   );
 }
-h3 + .card-grid {
-  margin-left: 1rem;
-}
-.card-grid + h3 {
+.card-grid + h2 {
   margin-top: 3em;
+}
+
+header {
+  background-color: var(--color-background-alternative);
+  border-bottom: var(--border-size) solid var(--color-background-field);
+  padding: 0.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .icon {
@@ -313,24 +341,20 @@ h3 + .card-grid {
   fill: var(--color-text);
 }
 
-.window {
-  display: flex;
-  flex-direction: column;
-  visibility: hidden;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+dialog {
+  background-color: transparent;
+  border: none;
+  width: 60rem;
+  height: 40rem;
+}
+::backdrop {
+  backdrop-filter: blur(20px) brightness(.6);
+}
+.dialog-content {
+  border: var(--color-background-field) solid var(--border-size);
+  border-radius: var(--border-radius);
   background-color: var(--color-background);
-  transform: translateY(100%);
-  transition: transform 0.5s ease-in-out, visibility 0.5s;
-}
-.window:target,
-.window[open] {
-  visibility: visible;
-  transform: translateY(0);
-}
-.window > iframe {
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
 }
@@ -363,7 +387,7 @@ form {
 }
 fieldset {
   margin-top: 1.5rem;
-  border: 0.1rem solid var(--color-lightened);
+  border: var(--border-size) dashed var(--color-lightened);
   border-radius: var(--border-radius);
   background-color: var(--color-background-alternative);
 }
@@ -374,7 +398,7 @@ form button,
 button[type="submit"] {
   display: block;
   padding: 0.4em;
-  border: 1px solid var(--color-border-field);
+  border: var(--border-size) solid var(--color-border-field);
   border-radius: calc(var(--border-radius) / 2);
   box-sizing: border-box;
   font-size: medium;
@@ -390,6 +414,7 @@ form input,
 form textarea,
 form select,
 form button,
+form p,
 button[type="submit"] {
   margin-top: 1rem;
 }
@@ -420,7 +445,7 @@ button[type="submit"]:hover > svg {
 }
 
 .message-frame {
-  position: fixed;
+  position: absolute;
   top: 1rem;
   right: 1rem;
   width: 16rem;
@@ -450,19 +475,19 @@ button[type="submit"]:hover > svg {
 
   animation: 5s ease-in forwards message;
 }
-.message.info {
+.info {
   border-color: var(--color-info);
   background-color: var(--color-info-background);
 }
-.message.success {
+.success {
   border-color: var(--color-success);
   background-color: var(--color-success-background);
 }
-.message.warn {
+.warn {
   border-color: var(--color-warn);
   background-color: var(--color-warn-background);
 }
-.message.error {
+.error {
   border-color: var(--color-error);
   background-color: var(--color-error-background);
 }
@@ -493,7 +518,8 @@ button[type="submit"]:hover > svg {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
 }
 .recorder .icon > svg {
   fill: var(--color-text);
@@ -505,7 +531,7 @@ button[type="submit"]:hover > svg {
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
-  background-color: var(--color-background);
+  background-color: var(--color-background-alternative);
 }
 .recorder .controls > .icon-main > svg {
   display: none;
@@ -524,12 +550,12 @@ button[type="submit"]:hover > svg {
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: var(--color-background-alternative);
 }
 .recorder > .main > .player {
   visibility: hidden;
   width: 0;
   transition: width 1s ease-in-out, visibility 1s;
+  background-color: var(--color-background-alternative);
 }
 .recorder[data-status="playable"] > .main > .player {
   visibility: visible;
@@ -549,11 +575,14 @@ button[type="submit"]:hover > svg {
   left: 50%;
   transform: translate(-50%, -25%);
   z-index: 1;
+  border-radius: 50%;
+  box-shadow: 0 5px 10px black;
 }
 .recorder[data-status="recording"] > .main > .icon-main > svg {
   bottom: 50%;
-  fill: red;
   font-size: calc(2.5rem * 5);
+  fill: red;
+  box-shadow: 0 0 6rem red;
   transform: translate(-50%, 25%);
   animation: 2s ease-in-out infinite alternate center-breathe;
 }
@@ -568,6 +597,7 @@ button[type="submit"]:hover > svg {
 .record {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 .record > input[type="file"] {
   position: absolute;
@@ -604,8 +634,4 @@ section:first-of-type {
   background-color: var(--color-background-live);
   --color-transition-from: var(--color-background-live);
   --color-transition-to: var(--color-background);
-}
-
-#schedule {
-  padding-top: 1rem;
 }

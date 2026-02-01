@@ -9,8 +9,8 @@ for (let i = 0; i < players.length; i++) {
     new IcecastMetadataPlayer(JSON.parse(endpoints.innerText), {
       endpointOrder: endpoints.getAttribute("data-order"),
       onMetadata: (metadata) => {
-        const titleElement = player.querySelector(".info > h4 > b");
-        const subtitleElement = player.querySelector(".info > p");
+        const titleElement = player.querySelector(".player-info > h4 > b");
+        const subtitleElement = player.querySelector(".player-info > p");
 
         let title, artist, album;
         // Prefer ogg metadata
@@ -39,14 +39,14 @@ for (let i = 0; i < players.length; i++) {
     })
   );
 
-  const endpointSelect = player.querySelector(".controls > select");
+  const endpointSelect = player.querySelector(".player-controls > select");
   if (endpointSelect) {
     endpointSelect.addEventListener("change", () => {
       audioPlayer.switchEndpoint(endpointSelect.value, {});
     });
   }
 
-  const playStop = player.querySelector(".controls > .play-stop");
+  const playStop = player.querySelector(".player-controls > .play-stop");
   const play = playStop.querySelector("button:first-of-type");
   const stop = playStop.querySelector("button:last-of-type");
   const audioPlayer = audioPlayers[i];
@@ -93,7 +93,7 @@ const recorderStop = recorder.querySelector(".controls > .icon-main");
 const recorderClose = recorder.querySelector(".controls > button:first-child");
 const recorderDone = recorder.querySelector(".controls > button:last-child");
 const recorderPlayer = recorder.querySelector(".main > .player");
-const recorderPlayerInfo = recorderPlayer.querySelector(".info");
+const recorderPlayerInfo = recorderPlayer.querySelector(".player-info");
 const recorderPlayerPlayStop = recorderPlayer.querySelector(".play-stop");
 const recorderPlayerSeek = recorderPlayer.querySelector('input[type="range"]');
 const recorderPlayerPlay = recorderPlayerPlayStop.querySelector(":first-child");
@@ -167,12 +167,12 @@ function setupRecorderListeners() {
 }
 
 recorderClose.onclick = () => {
-  recorderWindow.removeAttribute("open");
+  recorderDialog.close();
   recorderDestroy();
   recorder.setAttribute("data-status", "init");
 };
 recorderDone.onclick = () => {
-  recorderWindow.removeAttribute("open");
+  recorderDialog.close();
 
   const file = new File([amr.getBlob()], "recording.amr", {
     type: "audio/amr",
@@ -181,6 +181,7 @@ recorderDone.onclick = () => {
   const container = new DataTransfer();
   container.items.add(file);
   recorderTargetFileInput.files = container.files;
+  recorderTargetFileInput.onchange();
 
   recorderDestroy();
   recorder.setAttribute("data-status", "init");
@@ -208,20 +209,23 @@ recorderPlayerSeek.onchange = (event) => {
 };
 
 let recorderTargetFileInput;
-const recorderWindow = document.querySelector("#recorder");
+const recorderDialog = document.querySelector("#recorder");
 const records = document.querySelectorAll(".record");
 for (let index = 0; index < records.length; index++) {
   const record = records[index];
   const fileInput = record.querySelector('input[type="file"]');
   const recordButton = record.querySelector("button:first-of-type");
   const selectFileButton = record.querySelector("button:last-of-type");
-  const fileLabel = document.querySelectorAll(".record + p")[index];
+  const fileLabel = document.querySelectorAll(".record > p")[index];
 
   recordButton.onclick = () => {
     recorderTargetFileInput = fileInput;
-    recorderWindow.setAttribute("open", "");
+    recorderDialog.showModal();
   };
   selectFileButton.onclick = () => {
     fileInput.click();
+  };
+  fileInput.onchange = () => {
+    fileLabel.innerText = fileInput.files[0].name;
   };
 }
