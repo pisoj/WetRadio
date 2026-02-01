@@ -1,9 +1,11 @@
 :root {
   --color-text: white;
   --color-text-inverted: black;
-  --color-muted-text: hsl(0, 0%, 80%);
-  --color-background-default: hsl(0, 0%, 10%);
-  --color-background-alternative: hsl(0, 0%, 15%);
+  --color-muted-text: hsl(219, 11%, 65%);
+  --color-background-default: hsl(224, 71%, 4%);
+  --color-background-alternative: hsl(220, 43%, 11%);
+  --color-background-field: hsl(223, 22%, 18%);
+  --color-border-field: hsl(219, 14%, 27%);
   --color-background: var(--color-background-default);
   --color-dimmed: hsla(0, 0%, 0%, 0.3);
   --color-lightened: hsla(0, 0%, 100%, 0.3);
@@ -19,12 +21,12 @@
 
   --color-background-live: var(--color-info);
 
-  --border-radius: 0.4rem;
+  --border-radius: 0rem;
 
   --transition-height: 15rem;
 
   color-scheme: dark;
-  font-family: Verdana;
+  font-family: Verdana, sans-serif;
   color: var(--color-text);
 }
 html {
@@ -240,6 +242,7 @@ data.endpoints {
   height: 12rem;
   width: 26rem;
   max-width: 100%;
+  border: 2px solid var(--color-background-field);
   border-radius: var(--border-radius);
 }
 .card > img {
@@ -253,9 +256,10 @@ data.endpoints {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem;
-  -webkit-backdrop-filter: blur(0.5rem);
-  backdrop-filter: blur(0.5rem);
+  padding: 0.4rem 0.6rem;
+  -webkit-backdrop-filter: blur(0.5rem) saturate(.7);
+  backdrop-filter: blur(20px) saturate(.7) brightness(.5);
+  border-top: 2px solid var(--color-background-field);
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
 }
@@ -285,14 +289,18 @@ h3 + .card-grid {
 }
 .icon-button {
   position: relative;
+  display: flex;
   --icon-button-size: 2.4rem;
+}
+.icon-button::after {
+  content: '';
   height: var(--icon-button-size);
   width: var(--icon-button-size);
+  transition: background-color 150ms ease-in;
   border-radius: 50%;
-  transition: background-color 0.15s ease-in;
 }
-.icon-button:hover,
-.icon-button:focus {
+.icon-button:hover::after,
+.icon-button:focus::after {
   background-color: var(--color-lightened);
 }
 .icon-button > svg {
@@ -357,6 +365,7 @@ fieldset {
   margin-top: 1.5rem;
   border: 0.1rem solid var(--color-lightened);
   border-radius: var(--border-radius);
+  background-color: var(--color-background-alternative);
 }
 input,
 textarea,
@@ -364,14 +373,18 @@ select,
 form button,
 button[type="submit"] {
   display: block;
-  padding: 0.5em;
-  border: none;
+  padding: 0.4em;
+  border: 1px solid var(--color-border-field);
   border-radius: calc(var(--border-radius) / 2);
   box-sizing: border-box;
   font-size: medium;
-  color: var(--color-text-inverted);
-  background-color: var(--color-text);
+  background-color: var(--color-background-field);
   font-family: inherit;
+}
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--color-muted-text);
 }
 form input,
 form textarea,
@@ -389,18 +402,21 @@ input[type="range"] {
   padding: 0;
   width: 100%;
 }
+button > svg {
+  fill: var(--color-text);
+}
 button[type="submit"] {
   float: right;
   cursor: pointer;
 }
 button[type="submit"] > svg {
-  transition: height 0.3s ease-in-out, padding 0.3s ease-in-out;
+  transition: height 150ms ease-in-out, padding 150ms ease-in-out;
   height: 0;
   padding-left: 0;
 }
 button[type="submit"]:hover > svg {
-  height: 1em;
-  padding-left: .25ch;
+  height: 1.3ch;
+  padding-left: 0.5ch;
 }
 
 .message-frame {
