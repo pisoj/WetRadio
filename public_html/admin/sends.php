@@ -19,7 +19,7 @@ $send_type = $send_type_stmt->fetchObject();
 $send_type_title = $send_type->title;
 $send_type_fields = json_decode($send_type->fields);
 
-$send_items_stmt = $conn->prepare("SELECT id, data, datetime FROM send_items WHERE send_type_id = :id LIMIT :page_size OFFSET :page_offset");
+$send_items_stmt = $conn->prepare("SELECT id, data, datetime FROM send_items WHERE send_type_id = :id ORDER BY datetime DESC LIMIT :page_size OFFSET :page_offset");
 $send_items_stmt->bindParam(":id", $id);
 $send_items_stmt->bindParam(":page_size", $page_size);
 $send_items_stmt->bindParam(":page_offset", $page_offset);

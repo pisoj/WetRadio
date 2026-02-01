@@ -21,7 +21,6 @@ $send_type_fields = json_decode($send_type->fields);
 $send_items_stmt = $conn->prepare("SELECT * FROM (SELECT i.id AS id, i.data AS data, i.datetime AS datetime, t.fields AS fields, t.title AS title FROM send_items AS i INNER JOIN send_types AS t ON t.id = i.send_type_id ORDER BY i.id DESC LIMIT :last) r ORDER BY r.id ASC");
 $send_items_stmt->bindParam(":last", $last);
 $send_items_stmt->execute();
-$count = 0;
 ?>
 <!DOCTYPE html>
 <html>
@@ -85,14 +84,12 @@ $count = 0;
       <br>
     <?php endwhile ?>
   <?php
-  usleep(2_000);
-  if($count >= 1_000) {
-    $count = 0;
-    $send_items_stmt = $conn->prepare("SELECT i.id AS id, i.data AS data, i.datetime AS datetime, t.fields AS fields, t.title AS title FROM send_items AS i INNER JOIN send_types AS t ON t.id = i.send_type_id WHERE i.id > :last_id ORDER BY i.id ASC");
-    $send_items_stmt->bindParam(":last_id", $last_send_id);
-    $send_items_stmt->execute();
-  }
-  $count++;
+  ob_flush();
+  flush();
+  sleep(2);
+  $send_items_stmt = $conn->prepare("SELECT i.id AS id, i.data AS data, i.datetime AS datetime, t.fields AS fields, t.title AS title FROM send_items AS i INNER JOIN send_types AS t ON t.id = i.send_type_id WHERE i.id > :last_id ORDER BY i.id ASC");
+  $send_items_stmt->bindParam(":last_id", $last_send_id);
+  $send_items_stmt->execute();
   endwhile;
   ?>
 </body>
