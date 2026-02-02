@@ -148,3 +148,8 @@ Update the database:
 ```shell
 $ sqlite3 public_html/db < db.init.sql
 ```
+
+## Favicon
+
+To generate favicon go to [this website](https://realfavicongenerator.net/), follow the wizard and **download a zip**.
+After that, **unpack** the zip archive inside the `public_html` directory. All `head tags` are **already set** so you don't have to worry about them.

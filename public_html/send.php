@@ -50,13 +50,18 @@ if ($last_sent_seconds_passed < $send_interval_seconds) {
   die();
 }
 
-$send_type_stmt = $conn->prepare("SELECT fields, success_message FROM send_types WHERE id = :id AND disabled = 0");
+$send_type_stmt = $conn->prepare("SELECT fields, success_message, disabled FROM send_types WHERE id = :id AND disabled = 0");
 $send_type_stmt->bindParam(":id", $id);
 $send_type_stmt->execute();
 $send_type = $send_type_stmt->fetchAll(PDO::FETCH_OBJ);
 if (count($send_type) < 1) {
   http_response_code(400);
   echo message("Invalid id", null, "error");
+  die();
+}
+if ($send_type->disabled) {
+  http_response_code(403);
+  echo message("Currently unavailable", "The send type with id {$id} is currently disabled", "error");
   die();
 }
 $send_type_fields = json_decode($send_type[0]->fields, false);

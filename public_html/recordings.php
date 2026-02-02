@@ -37,16 +37,27 @@ $recordings_stmt->execute();
 $recordings = $recordings_stmt->fetchAll(PDO::FETCH_OBJ);
 $recordings_count = count($recordings);
 
-$show_title_stmt = $conn->prepare("SELECT title FROM show_items WHERE id = :id");
-$show_title_stmt->bindParam(":id", $id);
-$show_title_stmt->execute();
-$show_title = $show_title_stmt->fetchAll(PDO::FETCH_NUM)[0][0];
-if (!$show_title) {
+$website_title = $conn->query("SELECT value FROM preferences_string WHERE key = 'metadata_title'")->fetchAll(PDO::FETCH_NUM)[0][0];
+$show_info_stmt = $conn->prepare("SELECT title, subtitle, is_replayable, disabled FROM show_items WHERE id = :id");
+$show_info_stmt->bindParam(":id", $id);
+$show_info_stmt->execute();
+$show_info = $show_info_stmt->fetchAll(PDO::FETCH_OBJ)[0];
+if (!$show_info) {
   http_response_code(404);
   echo "
         <h1>A show with id of {$id} does not exist</h1>
         <p>You may have entered an invalid id.</p>
     ";
+  die();
+}
+if (!$show_info->is_replayable) {
+  http_response_code(403);
+  echo "<h1>Recordings of the show with id {$id} are unavailable</h1>";
+  die();
+}
+if ($show_info->disabled) {
+  http_response_code(403);
+  echo "<h1>The show of id {$id} in unavailable</h1>";
   die();
 }
 
@@ -64,16 +75,22 @@ function page_url(int $page)
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><?php echo $show_title ?></title>
+  <title><?= $show_info->title . " - " . $website_title ?></title>
+  <meta name="description" content="<?= $show_info->subtitle ?>">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="assets/style.css" />
   <noscript><link rel="stylesheet" href="assets/no-js.css" /></noscript>
 </head>
 
 <body>
   <header>
-    <h4><?= $show_title ?></h4>
+    <h4><?= $show_info->title ?></h4>
   </header>
-  <main>
+  <div class="page">
     <?php
     if ($total_recordings == 0) {
       echo "<div class=\"message-screen\"><svg xmlns=\"http://www.w3.org/2000/svg\" height=\"1em\" viewBox=\"0 0 512 512\"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d=\"M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z\"/></svg><h1>Još nema snimki</h1></div>";
@@ -192,7 +209,7 @@ function page_url(int $page)
         ?>
       </div>
     </div>
-  </main>
+  </div>
   <script src="assets/recordings.js"></script>
 </body>
 

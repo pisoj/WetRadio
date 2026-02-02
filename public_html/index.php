@@ -13,6 +13,11 @@ $preferences_string = $conn->query("SELECT key, value FROM preferences_string")-
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes" />
   <meta name="description" content="<?= $preferences_string["metadata_description"] ?? '' ?>">
   <meta name="keywords" content="<?= $preferences_string["metadata_keywords"] ?? '' ?>">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <link rel="stylesheet" href="assets/style.css" />
   <title><?= $preferences_string["metadata_title"] ?? '' ?></title>
   <noscript><link rel="stylesheet" href="assets/no-js.css" /></noscript>
@@ -48,59 +53,59 @@ $preferences_string = $conn->query("SELECT key, value FROM preferences_string")-
       <p><?= $preferences_string["header_message"] ?></p>
     </header>
   <?php endif ?>
-  <main>
+  <?php
+    $stations_stmt = $conn->prepare("SELECT * FROM stations WHERE disabled = 0 ORDER BY priority DESC");
+    $stations_stmt->execute();
+    $stations = $stations_stmt->fetchAll(PDO::FETCH_OBJ);
+    if (count($stations) > 0):
+  ?>
+  <section id="live" class="transition sun">
     <?php
-      $stations_stmt = $conn->prepare("SELECT * FROM stations WHERE disabled = 0 ORDER BY priority DESC");
-      $stations_stmt->execute();
-      $stations = $stations_stmt->fetchAll(PDO::FETCH_OBJ);
-      if (count($stations) > 0):
-    ?>
-    <section id="live" class="transition sun">
-      <?php
-      foreach ($stations as $station) {
-        echo "
-            <div class=\"player\">
-              <div class=\"player-info\">
-                <h5><b>{$station->title}&nbsp;</b></h5>
-                <p>{$station->description}&nbsp;</p>
-              </div>
-              <div class=\"player-controls\">
-                <div class=\"play-stop js-only\" data-status=\"stopped\">
-                  <data class=\"endpoints\" data-order=\"{$station->endpoint_order}\">{$station->endpoints}</data>
-                  <button class=\"icon round\" aria-label=\"Pokreni\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d=\"M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM188.3 147.1c-7.6 4.2-12.3 12.3-12.3 20.9l0 176c0 8.7 4.7 16.7 12.3 20.9s16.8 4.1 24.3-.5l144-88c7.1-4.4 11.5-12.1 11.5-20.5s-4.4-16.1-11.5-20.5l-144-88c-7.4-4.5-16.7-4.7-24.3-.5z\"/></svg></button>
-                  <button class=\"icon round\" aria-label=\"Zaustavi\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d=\"M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm192-96l128 0c17.7 0 32 14.3 32 32l0 128c0 17.7-14.3 32-32 32l-128 0c-17.7 0-32-14.3-32-32l0-128c0-17.7 14.3-32 32-32z\"/></svg></button>
-                </div>";
-                $endpoints = json_decode($station->endpoints, true);
-                $endpoint_names = json_decode($station->endpoint_names, true);
-                if($station->endpoint_order == "random") {
-                  $endpoints_order = range(1, count($endpoints));
-                  shuffle($endpoints_order);
-                  array_multisort($endpoints_order, $endpoints, $endpoint_names);
-                } else {
-                  echo "<select>";
-                  for ($i = 0; $i < count($endpoint_names); $i++) {
-                    echo "<option value=\"{$endpoints[$i]}\">{$endpoint_names[$i]}</option>";
-                  }
-                  echo "</select>";
-                }
-          echo "<noscript>
-                  <audio controls>
-                  ";
-                foreach($endpoints as $endpoint) {
-                  echo "
-                    <source src=\"{$endpoint}\" />
-                  ";
-                }
-        echo      "</audio>
-                </noscript>
-              </div>
+    foreach ($stations as $station) {
+      echo "
+          <div class=\"player\">
+            <div class=\"player-info\">
+              <h4><b>{$station->title}&nbsp;</b></h4>
+              <p>{$station->description}&nbsp;</p>
             </div>
-          ";
-      }
-      ?>
-      <span class="curve"></span>
-    </section>
-    <?php endif ?>
+            <div class=\"player-controls\">
+              <div class=\"play-stop js-only\" data-status=\"stopped\">
+                <data class=\"endpoints\" data-order=\"{$station->endpoint_order}\">{$station->endpoints}</data>
+                <button class=\"icon round\" aria-label=\"Pokreni\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d=\"M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM188.3 147.1c-7.6 4.2-12.3 12.3-12.3 20.9l0 176c0 8.7 4.7 16.7 12.3 20.9s16.8 4.1 24.3-.5l144-88c7.1-4.4 11.5-12.1 11.5-20.5s-4.4-16.1-11.5-20.5l-144-88c-7.4-4.5-16.7-4.7-24.3-.5z\"/></svg></button>
+                <button class=\"icon round\" aria-label=\"Zaustavi\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d=\"M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm192-96l128 0c17.7 0 32 14.3 32 32l0 128c0 17.7-14.3 32-32 32l-128 0c-17.7 0-32-14.3-32-32l0-128c0-17.7 14.3-32 32-32z\"/></svg></button>
+              </div>";
+              $endpoints = json_decode($station->endpoints, true);
+              $endpoint_names = json_decode($station->endpoint_names, true);
+              if($station->endpoint_order == "random") {
+                $endpoints_order = range(1, count($endpoints));
+                shuffle($endpoints_order);
+                array_multisort($endpoints_order, $endpoints, $endpoint_names);
+              } else {
+                echo "<select>";
+                for ($i = 0; $i < count($endpoint_names); $i++) {
+                  echo "<option value=\"{$endpoints[$i]}\">{$endpoint_names[$i]}</option>";
+                }
+                echo "</select>";
+              }
+        echo "<noscript>
+                <audio controls>
+                ";
+              foreach($endpoints as $endpoint) {
+                echo "
+                  <source src=\"{$endpoint}\" />
+                ";
+              }
+      echo      "</audio>
+              </noscript>
+            </div>
+          </div>
+        ";
+    }
+    ?>
+    <span class="curve"></span>
+  </section>
+  <?php endif ?>
+  <div class="page">
     <section id="form">
       <?php
       if ($preferences_string['title_above_sends'] ?? '') {
@@ -180,7 +185,7 @@ $preferences_string = $conn->query("SELECT key, value FROM preferences_string")-
       }
       ?>
     </section>
-  </main>
+  </div>
   <script src="assets/icecast-metadata-player/icecast-metadata-player-1.17.13.main.min.js"></script>
   <script src="assets/BenzaAMRRecorder.min.js"></script>
   <script src="assets/app.js"></script>
