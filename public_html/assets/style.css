@@ -305,6 +305,7 @@ header {
   width: 100%;
   display: flex;
   justify-content: center;
+  z-index: 1;
 }
 header p, header h4 {
   margin: 0 1rem;

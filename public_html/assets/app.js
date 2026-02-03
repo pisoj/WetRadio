@@ -96,8 +96,8 @@ const recorderPlayer = recorder.querySelector(".main > .player");
 const recorderPlayerInfo = recorderPlayer.querySelector(".player-info");
 const recorderPlayerPlayStop = recorderPlayer.querySelector(".play-stop");
 const recorderPlayerSeek = recorderPlayer.querySelector('input[type="range"]');
-const recorderPlayerPlay = recorderPlayerPlayStop.querySelector(":first-child");
-const recorderPlayerStop = recorderPlayerPlayStop.querySelector(":last-child");
+const recorderPlayerPlay = recorderPlayerPlayStop.querySelector("button:first-child");
+const recorderPlayerStop = recorderPlayerPlayStop.querySelector("button:last-child");
 
 function formatTime(seconds) {
   return Math.floor(seconds / 60) + ":" + (seconds % 60).toDigets();
