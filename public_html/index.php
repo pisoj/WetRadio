@@ -24,9 +24,9 @@ $preferences_string = $conn->query("SELECT key, value FROM preferences_string")-
 </head>
 
 <body>
-  <iframe title="Status slanja" name="message" class="message-frame" src="data:text/html;charset=utf-8,%3Chtml%3E%3Chead%3E%3Cstyle%3E%3Aroot%7Bcolor%2Dscheme%3A%20dark%3B%7D%3C%2Fstyle%3E%3C%2Fhead%3E%3Cbody%3E%3C%2Fbody%3E%3C%2Fhtml%3E"></iframe>
+  <iframe title="Status slanja" name="message" class="message-frame" srcdoc="<html><head><style>:root{color-scheme: dark;}</style></head><body></body></html>"></iframe>
   <dialog id="recorder">
-    <div class="dialog-content recorder" data-status="init">
+    <div class="dialog-content recorder" data-status="init" data-enable-agc="<?= $preferences_boolean['send_recorder_enable_agc'] ?? false ?>" data-bitrate="<?= $preferences_string['send_recorder_bits_per_second'] ?>">
       <div class="main">
         <div class="player">
           <div class="player-info" data-position-current="0:13" data-position-end="0:47">
@@ -187,7 +187,6 @@ $preferences_string = $conn->query("SELECT key, value FROM preferences_string")-
     </section>
   </div>
   <script src="assets/icecast-metadata-player/icecast-metadata-player-1.17.13.main.min.js"></script>
-  <script src="assets/BenzaAMRRecorder.min.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>

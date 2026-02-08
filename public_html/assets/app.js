@@ -85,8 +85,9 @@ Number.prototype.toDigets = function (n = 2) {
     this
   );
 };
-let amr;
-let recorderPlayerTimeUpdateIntervalId;
+let recorderBlob;
+let destroyMediaStream;
+let recorderPlayerAudioElement;
 const recorder = document.querySelector(".recorder");
 const recorderRecord = recorder.querySelector(".main > .icon-main");
 const recorderStop = recorder.querySelector(".controls > .icon-main");
@@ -103,110 +104,125 @@ function formatTime(seconds) {
   return Math.floor(seconds / 60) + ":" + (seconds % 60).toDigets();
 }
 
-function recorderPlayerCurrentTimeUpdate() {
-  recorderPlayerInfo.setAttribute(
-    "data-position-current",
-    formatTime(Math.ceil(amr.getCurrentPosition()))
-  );
-  recorderPlayerSeek.value = amr.getCurrentPosition();
-}
-
 function recorderPlayerReset() {
   recorderPlayerPlayStop.setAttribute("data-status", "stopped");
   recorderPlayerInfo.setAttribute("data-position-current", "0:00");
   recorderPlayerSeek.value = 0;
 }
 
-function setRecorderPlayerTimeUpdateInterval() {
-  if (amr) {
-    recorderPlayerCurrentTimeUpdate();
-  }
-  recorderPlayerTimeUpdateIntervalId = setInterval(() => {
-    if (amr) {
-      recorderPlayerCurrentTimeUpdate();
-    }
-  }, 1000);
-}
-
 function recorderDestroy() {
-  amr.destroy();
-  amr = null;
-  clearInterval(recorderPlayerTimeUpdateIntervalId);
+  destroyMediaStream?.();
+  if (recorderPlayerAudioElement) recorderPlayerAudioElement.pause();
   recorderPlayerReset();
-}
-
-function setupRecorderListeners() {
-  amr.onPlay(() => {
-    setRecorderPlayerTimeUpdateInterval();
-    recorderPlayerPlayStop.setAttribute("data-status", "playing");
-  });
-  amr.onResume(() => {
-    setRecorderPlayerTimeUpdateInterval();
-    recorderPlayerPlayStop.setAttribute("data-status", "playing");
-  });
-  amr.onStop(() => {
-    recorderPlayerPlayStop.setAttribute("data-status", "stopped");
-    clearInterval(recorderPlayerTimeUpdateIntervalId);
-  });
-  amr.onPause(() => {
-    recorderPlayerPlayStop.setAttribute("data-status", "stopped");
-    clearInterval(recorderPlayerTimeUpdateIntervalId);
-  });
-  amr.onStartRecord(() => {
-    recorder.setAttribute("data-status", "recording");
-  });
-  amr.onFinishRecord(() => {
-    recorderPlayerReset();
-    recorderPlayerSeek.setAttribute("max", amr.getDuration());
-    recorderPlayerInfo.setAttribute(
-      "data-position-end",
-      formatTime(Math.ceil(amr.getDuration()))
-    );
-    recorder.setAttribute("data-status", "playable");
-  });
-}
-
-recorderClose.onclick = () => {
-  recorderDialog.close();
-  recorderDestroy();
   recorder.setAttribute("data-status", "init");
-};
-recorderDone.onclick = () => {
   recorderDialog.close();
+}
+recorderClose.onclick = recorderDestroy;
 
-  const file = new File([amr.getBlob()], "recording.amr", {
-    type: "audio/amr",
-    lastModified: new Date().getTime(),
-  });
-  const container = new DataTransfer();
-  container.items.add(file);
-  recorderTargetFileInput.files = container.files;
-  recorderTargetFileInput.onchange();
+const recorderBitrate = parseInt(recorder.getAttribute("data-bitrate"));
+let recordingFormatMimeType;
+for (const format of [
+  "audio/ogg; codecs=opus",
+  "audio/webm; codecs=opus",
+  "audio/mp4",
+]) {
+  if (!MediaRecorder.isTypeSupported(format)) continue;
+  recordingFormatMimeType = format;
+  break;
+}
+function record() {
+  if (recorder.getAttribute("data-status") === "recording") return;
+  recorderPlayerAudioElement?.pause();
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: recorder.getAttribute("data-enable-agc") === "on",
+      },
+    }).then((stream) => {
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: recordingFormatMimeType,
+        audioBitsPerSecond: isNaN(recorderBitrate) ? undefined : recorderBitrate
+      });
+      let isDestroyed = false;
+      destroyMediaStream = () => {
+        isDestroyed = true;
+        mediaRecorder.stop();
+      };
+      mediaRecorder.start();
 
-  recorderDestroy();
-  recorder.setAttribute("data-status", "init");
-};
-recorderRecord.onclick = () => {
-  if (amr && amr.isRecording()) return;
-  if (amr) amr.stop();
-  amr = new BenzAMRRecorder();
-  setupRecorderListeners();
-  amr
-    .initWithRecord()
-    .then(() => {
-      amr.startRecord();
-    })
-    .catch(function (e) {
+      recorderStop.onclick = () => {
+        mediaRecorder.stop();
+      };
+      let chunks = [];
+      mediaRecorder.ondataavailable = (e) => {
+        chunks.push(e.data);
+      };
+      mediaRecorder.onstart = () => {
+        recorder.setAttribute("data-status", "recording");
+      };
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        if (isDestroyed) return;
+        recorderPlayerPlayStop.setAttribute("data-status", "stopped");
+
+        recorderBlob = new Blob(chunks, { type: mediaRecorder.mimeType });
+        chunks = [];
+        recorderPlayerAudioElement = new Audio(window.URL.createObjectURL(recorderBlob));
+        recorderPlayerSetupCallbacks(recorderPlayerAudioElement);
+        recorderPlayerReset();
+        recorderPlayerAudioElement.onloadedmetadata = () => {
+          recorderPlayerSeek.setAttribute("max", recorderPlayerAudioElement.duration.toString());
+          recorderPlayerInfo.setAttribute(
+              "data-position-end",
+              formatTime(Math.ceil(recorderPlayerAudioElement.duration))
+          );
+          recorder.setAttribute("data-status", "playable");
+        };
+      };
+    }).catch((e) => {
       alert(e.message || e.name || JSON.stringify(e));
     });
-};
-recorderStop.onclick = () => amr.finishRecord();
-recorderPlayerPlay.onclick = () => amr.playOrResume();
-recorderPlayerStop.onclick = () => amr.pause();
-recorderPlayerSeek.onchange = (event) => {
-  amr.setPosition(event.target.value);
-  recorderPlayerCurrentTimeUpdate();
-};
+  } else {
+    alert("getUserMedia not supported on your browser!");
+  }
+}
+recorderRecord.onclick = record;
+
+function recorderPlayerSetupCallbacks(recorderPlayerAudioElement) {
+  recorderPlayerPlay.onclick = () => {
+    recorderPlayerAudioElement.play();
+    recorderPlayerPlayStop.setAttribute("data-status", "playing");
+  };
+  recorderPlayerStop.onclick = () => {
+    recorderPlayerAudioElement.pause();
+    recorderPlayerPlayStop.setAttribute("data-status", "stopped");
+  };
+  recorderPlayerAudioElement.onended = recorderPlayerStop.onclick;
+  recorderPlayerSeek.onchange = (event) => {
+    recorderPlayerAudioElement.currentTime = event.target.value;
+  };
+  recorderPlayerAudioElement.ontimeupdate = (event) => {
+    recorderPlayerInfo.setAttribute(
+        "data-position-current",
+        formatTime(Math.ceil(event.target.currentTime))
+    );
+    recorderPlayerSeek.value = event.target.currentTime;
+  };
+  recorderDone.onclick = () => {
+    const file = new File([recorderBlob], "Snimka je priložena", {
+      type: recorderBlob.type,
+      lastModified: new Date().getTime(),
+    });
+    const container = new DataTransfer();
+    container.items.add(file);
+    recorderTargetFileInput.files = container.files;
+    recorderTargetFileInput.onchange();
+
+    recorderDestroy();
+  };
+}
 
 let recorderTargetFileInput;
 const recorderDialog = document.querySelector("#recorder");
@@ -221,6 +237,7 @@ for (let index = 0; index < records.length; index++) {
   recordButton.onclick = () => {
     recorderTargetFileInput = fileInput;
     recorderDialog.showModal();
+    this.record();
   };
   selectFileButton.onclick = () => {
     fileInput.click();

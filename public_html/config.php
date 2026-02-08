@@ -16,9 +16,11 @@ $audio_mime_types = array(
   "audio/m4a" => ".m4a",
   "audio/x-m4a" => ".m4a",
   "audio/mpeg" => ".mp3",
-  "audio/ogg" => ".oga",
+  "audio/ogg" => ".ogg",
   "video/ogg" => ".ogg",
   "audio/opus" => ".opus",
+  "audio/webm" => ".webm",
+  "video/webm" => ".webm",
   "audio/aiff" => ".aif",
   "audio/x-aiff" => ".aif",
   "audio/wave" => ".wav",
@@ -31,7 +33,8 @@ $image_mime_types = array(
   "image/png" => ".png",
   "image/webp" => ".webp",
   "image/jpeg" => ".jpg",
-  "image/avif" => ".avif"
+  "image/avif" => ".avif",
+  "image/gif" => ".gif"
 );
 
 $db_name = "db";
