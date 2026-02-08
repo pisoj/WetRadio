@@ -1,7 +1,7 @@
 <?php
 
 $send_interval_seconds = 15;
-$send_file_max_size = "2M";
+$send_file_max_size = "25M";
 
 $recordings_page_size = 20;
 

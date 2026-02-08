@@ -72,6 +72,9 @@ for (let form of forms) {
       if (messageFrame.contentDocument.title === "") {
         return;
       }
+      for (const fileNameLabel of form.querySelectorAll(".record > p")) {
+        fileNameLabel.innerText = "";
+      }
       form.reset();
     };
     messageFrame.addEventListener("load", onSent);

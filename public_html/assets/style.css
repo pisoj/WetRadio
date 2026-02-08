@@ -450,7 +450,7 @@ button[type="submit"]:hover > svg {
 }
 
 .message-frame {
-  position: absolute;
+  position: fixed;
   top: 1rem;
   right: 1rem;
   width: 16rem;
