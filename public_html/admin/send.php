@@ -10,6 +10,25 @@ if($_SERVER['REQUEST_METHOD'] === "POST") {
     die();
   }
 
+  $privileged_sender_token_delete = $_POST["privileged_sender_token_delete"] ?? 0;
+  if($privileged_sender_token_delete) {
+    $stmt = $conn->prepare("UPDATE send_types SET privileged_sender_token = NULL WHERE id = :id");
+    $stmt->bindParam(":id", $_POST["id"]);
+    $stmt->execute();
+    header("Location: " . $_SERVER["REQUEST_URI"], true, 303);
+    die();
+  }
+
+  $privileged_sender_token_generate = $_POST["privileged_sender_token_generate"] ?? 0;
+  if($privileged_sender_token_generate) {
+    $stmt = $conn->prepare("UPDATE send_types SET privileged_sender_token = :new_token WHERE id = :id");
+    $stmt->bindParam(":id", $_POST["id"]);
+    $stmt->bindParam(":new_token", base64_encode(random_bytes(128)));
+    $stmt->execute();
+    header("Location: " . $_SERVER["REQUEST_URI"], true, 303);
+    die();
+  }
+
   $id = $_POST["id"] ?? null;
   $number_of_fields = $_POST["fields"] ?? 0;
   $title = $_POST["title"];
@@ -73,9 +92,10 @@ $priority = $_GET["priority"] ?? "";
 $submit_text = $_GET["submit_text"] ?? "";
 $success_message = $_GET["success_message"] ?? "";
 $disabled = $_GET["disabled"] ?? 0;
+$privileged_sender_token = "";
 
 if($id !== null) {
-  $send_type_stmt = $conn->prepare("SELECT title, priority, submit_text, success_message, disabled FROM send_types WHERE id = :id");
+  $send_type_stmt = $conn->prepare("SELECT title, priority, submit_text, success_message, disabled, privileged_sender_token FROM send_types WHERE id = :id");
   $send_type_stmt->bindParam(":id", $id);
   $send_type_stmt->execute();
   
@@ -86,6 +106,7 @@ if($id !== null) {
   $submit_text = $send_type->submit_text;
   $success_message = $send_type->success_message;
   $disabled = $send_type->disabled;
+  $privileged_sender_token = $send_type->privileged_sender_token;
 }
 ?>
 <!DOCTYPE html>
@@ -126,6 +147,12 @@ if($id !== null) {
             <label for="disabled" title="If a send is disabled its data is kept, but it's not accessible by users.">Disabled</label>
           </td>
         </tr>
+        <?php if(!empty($privileged_sender_token)): ?>
+        <tr>
+          <td>Privileged sender token</td>
+          <td><input type="text" value="<?= $privileged_sender_token ?>" title="Use this when making automated request to post a send. When this token gets attached to the multipart request body no rate limits will apply and you'll also be able to post to disabled send types." disabled></td>
+          </tr>
+        <?php endif ?>
         <?php
         if($number_of_fields == 0) {
           echo "
@@ -174,6 +201,16 @@ if($id !== null) {
       <input type="hidden" name="id" value="<?= $id ?>">
       <input type="hidden" name="delete" value="1">
       <input type="submit" value="Delete">
+    </form>
+    <form action="" method="post">
+      <input type="hidden" name="id" value="<?= $id ?>">
+      <input type="hidden" name="privileged_sender_token_delete" value="1">
+      <input type="submit" value="Delete privileged sender token">
+    </form>
+    <form action="" method="post">
+      <input type="hidden" name="id" value="<?= $id ?>">
+      <input type="hidden" name="privileged_sender_token_generate" value="1">
+      <input type="submit" value="Generate privileged sender token">
     </form>
     <?php endif ?>
   </fieldset>

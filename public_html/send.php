@@ -40,30 +40,35 @@ if ($id == null) {
 
 include "main.php";
 
-$now_date_time = new DateTimeImmutable("now");
-$last_sent_date_time = new DateTimeImmutable($_SESSION["last_sent"]);
-$last_sent_seconds_passed = $now_date_time->getTimestamp() - $last_sent_date_time->getTimestamp();
-if ($last_sent_seconds_passed < $send_interval_seconds) {
-  $last_sent_seconds_to_wait = $send_interval_seconds - $last_sent_seconds_passed;
-  http_response_code(400);
-  echo message("Još malo", "Pričekajte još {$last_sent_seconds_to_wait} sekundi prije ponovnog slanja.", "warn");
-  die();
-}
-
-$send_type_stmt = $conn->prepare("SELECT fields, success_message, disabled FROM send_types WHERE id = :id AND disabled = 0");
+$send_type_stmt = $conn->prepare("SELECT fields, success_message, disabled, privileged_sender_token FROM send_types WHERE id = :id AND disabled = 0");
 $send_type_stmt->bindParam(":id", $id);
 $send_type_stmt->execute();
 $send_type = $send_type_stmt->fetchAll(PDO::FETCH_OBJ);
+
 if (count($send_type) < 1) {
   http_response_code(400);
   echo message("Invalid id", null, "error");
   die();
 }
-if ($send_type->disabled) {
-  http_response_code(403);
-  echo message("Currently unavailable", "The send type with id {$id} is currently disabled", "error");
-  die();
+
+if ($_POST["privileged_sender_token"] != $send_type[0]->privileged_sender_token || empty($send_type[0]->privileged_sender_token)) {
+  $now_date_time = new DateTimeImmutable("now");
+  $last_sent_date_time = new DateTimeImmutable($_SESSION["last_sent"]);
+  $last_sent_seconds_passed = $now_date_time->getTimestamp() - $last_sent_date_time->getTimestamp();
+  if ($last_sent_seconds_passed < $send_interval_seconds) {
+    $last_sent_seconds_to_wait = $send_interval_seconds - $last_sent_seconds_passed;
+    http_response_code(400);
+    echo message("Još malo", "Pričekajte još {$last_sent_seconds_to_wait} sekundi prije ponovnog slanja.", "warn");
+    die();
+  }
+
+  if ($send_type->disabled) {
+    http_response_code(403);
+    echo message("Currently unavailable", "The send type with id {$id} is currently disabled", "error");
+    die();
+  }
 }
+
 $send_type_fields = json_decode($send_type[0]->fields, false);
 $send_type_success_message = $send_type[0]->success_message;
 

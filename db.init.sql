@@ -17,3 +17,10 @@ CREATE TABLE IF NOT EXISTS "preferences_boolean" ('key' TEXT PRIMARY KEY NOT NUL
 CREATE TABLE IF NOT EXISTS "preferences_string" ('key' TEXT PRIMARY KEY NOT NULL, 'value' TEXT NOT NULL);
 
 COMMIT;
+
+
+BEGIN TRANSACTION;
+
+ALTER TABLE "send_types" ADD "privileged_sender_token" TEXT;
+
+COMMIT;
